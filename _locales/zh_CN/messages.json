@@ -1,0 +1,212 @@
+{
+  "extensionName": {
+    "message": "Phoebe"
+  },
+  "extensionDescription": {
+    "message": "将选中的文字快速追加到Notion页面中"
+  },
+  "contextMenuSave": {
+    "message": "保存到Notion"
+  },
+  "popupTitle": {
+    "message": "Phoebe"
+  },
+  "popupSubtitle": {
+    "message": "快速保存网页精华内容"
+  },
+  "statusChecking": {
+    "message": "检查配置中..."
+  },
+  "statusConfigured": {
+    "message": "已配置，可以使用"
+  },
+  "statusConnected": {
+    "message": "连接正常"
+  },
+  "statusDisconnected": {
+    "message": "连接失败"
+  },
+  "statusError": {
+    "message": "连接错误"
+  },
+  "statusNotConfigured": {
+    "message": "未配置，请先设置"
+  },
+  "statusCheckNetwork": {
+    "message": "请检查网络连接"
+  },
+  "statusCheckConfig": {
+    "message": "请检查配置"
+  },
+  "statusClickSettings": {
+    "message": "点击设置按钮进行配置"
+  },
+  "usageTitle": {
+    "message": "使用方法"
+  },
+  "usageStep1": {
+    "message": "在网页上选中文字"
+  },
+  "usageStep2": {
+    "message": "右键选择\"保存到Notion\""
+  },
+  "usageStep3": {
+    "message": "添加备注和标签（可选）"
+  },
+  "usageStep4": {
+    "message": "点击保存即可"
+  },
+  "buttonSettings": {
+    "message": "设置"
+  },
+  "buttonRefresh": {
+    "message": "刷新"
+  },
+  "statsLoading": {
+    "message": "正在加载统计信息..."
+  },
+  "saveDialogTitle": {
+    "message": "保存到Notion"
+  },
+  "saveDialogContent": {
+    "message": "选中内容:"
+  },
+  "saveDialogNote": {
+    "message": "备注 (可选):"
+  },
+  "saveDialogNotePlaceholder": {
+    "message": "添加备注..."
+  },
+  "saveDialogTags": {
+    "message": "标签 (可选):"
+  },
+  "saveDialogTagsPlaceholder": {
+    "message": "输入标签，回车添加，或从下拉列表选择"
+  },
+  "buttonCancel": {
+    "message": "取消"
+  },
+  "buttonSave": {
+    "message": "保存"
+  },
+  "buttonSaving": {
+    "message": "保存中..."
+  },
+  "saveSuccess": {
+    "message": "成功保存到Notion!"
+  },
+  "saveFailed": {
+    "message": "保存失败"
+  },
+  "errorNetwork": {
+    "message": "未知错误，请检查网络连接"
+  },
+  "errorNotConfigured": {
+    "message": "请先在插件设置中配置Notion API密钥和页面ID"
+  },
+  "settingsTitle": {
+    "message": "Phoebe - 设置"
+  },
+  "setupGuideTitle": {
+    "message": "设置指南"
+  },
+  "setupStep1": {
+    "message": "访问 Notion集成页面 创建新的集成"
+  },
+  "setupStep2": {
+    "message": "复制生成的API密钥到下方"
+  },
+  "setupStep3": {
+    "message": "在Notion中创建或选择一个页面作为收集目标"
+  },
+  "setupStep4": {
+    "message": "在目标页面点击右上角\"共享\"，邀请你创建的集成并给予编辑权限"
+  },
+  "setupStep5": {
+    "message": "复制页面ID到下方（URL中的32位字符串）"
+  },
+  "setupStep5Example": {
+    "message": "例如：https://notion.so/your-page-id 中的 your-page-id 部分"
+  },
+  "setupStep6": {
+    "message": "保存配置后，插件会将选中内容追加到该页面末尾"
+  },
+  "labelApiToken": {
+    "message": "Notion API 密钥"
+  },
+  "labelPageId": {
+    "message": "页面 ID"
+  },
+  "helpApiToken": {
+    "message": "从 Notion集成页面 获取API密钥"
+  },
+  "helpPageId": {
+    "message": "从Notion页面URL中获取，格式如：https://notion.so/your-page-id"
+  },
+  "buttonSaveSettings": {
+    "message": "保存设置"
+  },
+  "buttonTestConnection": {
+    "message": "测试连接"
+  },
+  "buttonSavingSettings": {
+    "message": "保存中..."
+  },
+  "buttonTesting": {
+    "message": "测试中..."
+  },
+  "tagManagementTitle": {
+    "message": "标签管理"
+  },
+  "tagManagementDesc": {
+    "message": "管理您的标签历史记录"
+  },
+  "buttonRefreshTags": {
+    "message": "刷新标签"
+  },
+  "buttonClearTags": {
+    "message": "清空标签"
+  },
+  "buttonRefreshing": {
+    "message": "刷新中..."
+  },
+  "buttonClearing": {
+    "message": "清空中..."
+  },
+  "tagsLoading": {
+    "message": "正在加载标签历史..."
+  },
+  "tagsEmpty": {
+    "message": "暂无标签历史记录"
+  },
+  "tagsCount": {
+    "message": "共 $COUNT$ 个标签：",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmClearTags": {
+    "message": "确定要清空所有标签历史记录吗？此操作不可撤销。"
+  },
+  "confirmDeleteTag": {
+    "message": "确定要删除标签 \"$TAG$\" 吗？",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
+  },
+  "targetPage": {
+    "message": "目标页面: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "untitledPage": {
+    "message": "未命名页面"
+  }
+} 
