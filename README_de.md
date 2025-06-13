@@ -19,7 +19,7 @@ Phoebe ist eine intelligente Chrome-Erweiterung, benannt nach einem klugen klein
 
 ## 🚀 Installation
 
-1. `phoebe-v1.0.0.zip` Datei herunterladen
+1. `phoebe-v1.0.1.zip` Datei herunterladen
 2. Chrome-Erweiterungsseite öffnen (`chrome://extensions/`)
 3. "Entwicklermodus" aktivieren
 4. "Entpackte Erweiterung laden" anklicken

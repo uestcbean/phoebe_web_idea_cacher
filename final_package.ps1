@@ -4,7 +4,7 @@
 Write-Host "Creating Phoebe Chrome Extension package..." -ForegroundColor Green
 
 # Set output filename
-$outputFile = "phoebe-v1.0.0.zip"
+$outputFile = "phoebe-v1.0.1.zip"
 
 # Remove existing file if exists
 if (Test-Path $outputFile) {

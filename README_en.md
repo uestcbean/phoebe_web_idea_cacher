@@ -19,7 +19,7 @@ Phoebe is an intelligent Chrome extension named after a smart little dog. She he
 
 ## 🚀 Installation
 
-1. Download the `phoebe-v1.0.0.zip` file
+1. Download the `phoebe-v1.0.1.zip` file
 2. Open Chrome extensions page (`chrome://extensions/`)
 3. Enable "Developer mode"
 4. Click "Load unpacked" and select the extracted folder
