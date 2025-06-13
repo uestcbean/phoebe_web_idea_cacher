@@ -1,0 +1,212 @@
+{
+  "extensionName": {
+    "message": "Phoebe"
+  },
+  "extensionDescription": {
+    "message": "Quickly append selected text to Notion pages"
+  },
+  "contextMenuSave": {
+    "message": "Save to Notion"
+  },
+  "popupTitle": {
+    "message": "Phoebe"
+  },
+  "popupSubtitle": {
+    "message": "Save web content quickly"
+  },
+  "statusChecking": {
+    "message": "Checking configuration..."
+  },
+  "statusConfigured": {
+    "message": "Configured, ready to use"
+  },
+  "statusConnected": {
+    "message": "Connected"
+  },
+  "statusDisconnected": {
+    "message": "Connection failed"
+  },
+  "statusError": {
+    "message": "Connection error"
+  },
+  "statusNotConfigured": {
+    "message": "Not configured, please setup first"
+  },
+  "statusCheckNetwork": {
+    "message": "Please check network connection"
+  },
+  "statusCheckConfig": {
+    "message": "Please check configuration"
+  },
+  "statusClickSettings": {
+    "message": "Click settings button to configure"
+  },
+  "usageTitle": {
+    "message": "How to use"
+  },
+  "usageStep1": {
+    "message": "Select text on any webpage"
+  },
+  "usageStep2": {
+    "message": "Right-click and choose \"Save to Notion\""
+  },
+  "usageStep3": {
+    "message": "Add notes and tags (optional)"
+  },
+  "usageStep4": {
+    "message": "Click save"
+  },
+  "buttonSettings": {
+    "message": "Settings"
+  },
+  "buttonRefresh": {
+    "message": "Refresh"
+  },
+  "statsLoading": {
+    "message": "Loading statistics..."
+  },
+  "saveDialogTitle": {
+    "message": "Save to Notion"
+  },
+  "saveDialogContent": {
+    "message": "Selected content:"
+  },
+  "saveDialogNote": {
+    "message": "Note (optional):"
+  },
+  "saveDialogNotePlaceholder": {
+    "message": "Add a note..."
+  },
+  "saveDialogTags": {
+    "message": "Tags (optional):"
+  },
+  "saveDialogTagsPlaceholder": {
+    "message": "Enter tags, press Enter to add, or select from dropdown"
+  },
+  "buttonCancel": {
+    "message": "Cancel"
+  },
+  "buttonSave": {
+    "message": "Save"
+  },
+  "buttonSaving": {
+    "message": "Saving..."
+  },
+  "saveSuccess": {
+    "message": "Successfully saved to Notion!"
+  },
+  "saveFailed": {
+    "message": "Save failed"
+  },
+  "errorNetwork": {
+    "message": "Unknown error, please check network connection"
+  },
+  "errorNotConfigured": {
+    "message": "Please configure Notion API token and page ID in extension settings first"
+  },
+  "settingsTitle": {
+    "message": "Phoebe - Settings"
+  },
+  "setupGuideTitle": {
+    "message": "Setup Guide"
+  },
+  "setupStep1": {
+    "message": "Visit <a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion integrations page</a> to create a new integration"
+  },
+  "setupStep2": {
+    "message": "Copy the generated API token below"
+  },
+  "setupStep3": {
+    "message": "Create or select a page in Notion as collection target"
+  },
+  "setupStep4": {
+    "message": "Click \"Share\" on the target page, invite your integration and grant edit permissions"
+  },
+  "setupStep5": {
+    "message": "Copy the page ID below (32-character string from URL)"
+  },
+  "setupStep5Example": {
+    "message": "Example: the 32-character ID part from https://notion.so/page-title-32-character-id"
+  },
+  "setupStep6": {
+    "message": "After saving configuration, the extension will append selected content to the page"
+  },
+  "labelApiToken": {
+    "message": "Notion API Token"
+  },
+  "labelPageId": {
+    "message": "Page ID"
+  },
+  "helpApiToken": {
+    "message": "Get API token from <a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion integrations page</a>"
+  },
+  "helpPageId": {
+    "message": "Get from Notion page URL, format: https://notion.so/page-title-32-character-id"
+  },
+  "buttonSaveSettings": {
+    "message": "Save Settings"
+  },
+  "buttonTestConnection": {
+    "message": "Test Connection"
+  },
+  "buttonSavingSettings": {
+    "message": "Saving..."
+  },
+  "buttonTesting": {
+    "message": "Testing..."
+  },
+  "tagManagementTitle": {
+    "message": "Tag Management"
+  },
+  "tagManagementDesc": {
+    "message": "Manage your tag history"
+  },
+  "buttonRefreshTags": {
+    "message": "Refresh Tags"
+  },
+  "buttonClearTags": {
+    "message": "Clear Tags"
+  },
+  "buttonRefreshing": {
+    "message": "Refreshing..."
+  },
+  "buttonClearing": {
+    "message": "Clearing..."
+  },
+  "tagsLoading": {
+    "message": "Loading tag history..."
+  },
+  "tagsEmpty": {
+    "message": "No tag history found"
+  },
+  "tagsCount": {
+    "message": "$COUNT$ tags in total:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmClearTags": {
+    "message": "Are you sure you want to clear all tag history? This action cannot be undone."
+  },
+  "confirmDeleteTag": {
+    "message": "Are you sure you want to delete tag \"$TAG$\"?",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
+  },
+  "targetPage": {
+    "message": "Target page: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "untitledPage": {
+    "message": "Untitled page"
+  }
+} 

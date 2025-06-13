@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="popupTitle">Notion文摘收集器</title>
+    <style>
+        body {
+            width: 320px;
+            padding: 20px;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: #ccc;
+        }
+        
+        .status-dot.connected {
+            background: #4CAF50;
+        }
+        
+        .status-text {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .usage-guide {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .usage-guide h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .usage-guide ol {
+            margin: 0;
+            padding-left: 18px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .usage-guide li {
+            margin-bottom: 5px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: #0066cc;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0052a3;
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .stats {
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><img src="icons/icon48.png" alt="Logo" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 8px;"> <span data-i18n="popupTitle">Notion文摘收集器</span></h1>
+        <p data-i18n="popupSubtitle">快速保存网页精华内容</p>
+    </div>
+    
+    <div class="status-card">
+        <div class="status-indicator">
+            <div id="statusDot" class="status-dot"></div>
+            <span id="statusText" class="status-text" data-i18n="statusChecking">检查配置中...</span>
+        </div>
+    </div>
+    
+    <div class="usage-guide">
+        <h3>📖 <span data-i18n="usageTitle">使用方法</span></h3>
+        <ol>
+            <li data-i18n="usageStep1">在网页上选中文字</li>
+            <li data-i18n="usageStep2">右键选择"保存到Notion"</li>
+            <li data-i18n="usageStep3">添加备注和标签（可选）</li>
+            <li data-i18n="usageStep4">点击保存即可</li>
+        </ol>
+    </div>
+    
+    <div class="button-group">
+        <button id="openSettings" class="btn-primary" data-i18n="buttonSettings">⚙️ 设置</button>
+        <button id="refreshStatus" class="btn-secondary" data-i18n="buttonRefresh">🔄 刷新</button>
+    </div>
+    
+    <div class="stats" id="stats" data-i18n="statsLoading">
+        正在加载统计信息...
+    </div>
+
+    <script src="i18n.js"></script>
+    <script src="popup_script.js"></script>
+</body>
+</html>

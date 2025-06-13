@@ -1,0 +1,212 @@
+{
+  "extensionName": {
+    "message": "Phoebe"
+  },
+  "extensionDescription": {
+    "message": "Markierten Text schnell zu Notion-Seiten hinzufügen"
+  },
+  "contextMenuSave": {
+    "message": "In Notion speichern"
+  },
+  "popupTitle": {
+    "message": "Phoebe"
+  },
+  "popupSubtitle": {
+    "message": "Web-Inhalte schnell speichern"
+  },
+  "statusChecking": {
+    "message": "Konfiguration überprüfen..."
+  },
+  "statusConfigured": {
+    "message": "Konfiguriert, einsatzbereit"
+  },
+  "statusConnected": {
+    "message": "Verbunden"
+  },
+  "statusDisconnected": {
+    "message": "Verbindung fehlgeschlagen"
+  },
+  "statusError": {
+    "message": "Verbindungsfehler"
+  },
+  "statusNotConfigured": {
+    "message": "Nicht konfiguriert, bitte zuerst einrichten"
+  },
+  "statusCheckNetwork": {
+    "message": "Bitte Netzwerkverbindung überprüfen"
+  },
+  "statusCheckConfig": {
+    "message": "Bitte Konfiguration überprüfen"
+  },
+  "statusClickSettings": {
+    "message": "Einstellungen-Button klicken zum Konfigurieren"
+  },
+  "usageTitle": {
+    "message": "Verwendung"
+  },
+  "usageStep1": {
+    "message": "Text auf beliebiger Webseite markieren"
+  },
+  "usageStep2": {
+    "message": "Rechtsklick und \"In Notion speichern\" wählen"
+  },
+  "usageStep3": {
+    "message": "Notizen und Tags hinzufügen (optional)"
+  },
+  "usageStep4": {
+    "message": "Speichern klicken"
+  },
+  "buttonSettings": {
+    "message": "Einstellungen"
+  },
+  "buttonRefresh": {
+    "message": "Aktualisieren"
+  },
+  "statsLoading": {
+    "message": "Statistiken laden..."
+  },
+  "saveDialogTitle": {
+    "message": "In Notion speichern"
+  },
+  "saveDialogContent": {
+    "message": "Markierter Inhalt:"
+  },
+  "saveDialogNote": {
+    "message": "Notiz (optional):"
+  },
+  "saveDialogNotePlaceholder": {
+    "message": "Notiz hinzufügen..."
+  },
+  "saveDialogTags": {
+    "message": "Tags (optional):"
+  },
+  "saveDialogTagsPlaceholder": {
+    "message": "Tags eingeben, Enter zum Hinzufügen, oder aus Dropdown auswählen"
+  },
+  "buttonCancel": {
+    "message": "Abbrechen"
+  },
+  "buttonSave": {
+    "message": "Speichern"
+  },
+  "buttonSaving": {
+    "message": "Speichern..."
+  },
+  "saveSuccess": {
+    "message": "Erfolgreich in Notion gespeichert!"
+  },
+  "saveFailed": {
+    "message": "Speichern fehlgeschlagen"
+  },
+  "errorNetwork": {
+    "message": "Unbekannter Fehler, bitte Netzwerkverbindung überprüfen"
+  },
+  "errorNotConfigured": {
+    "message": "Bitte zuerst Notion API-Token und Seiten-ID in den Erweiterungs-Einstellungen konfigurieren"
+  },
+  "settingsTitle": {
+    "message": "Phoebe - Einstellungen"
+  },
+  "setupGuideTitle": {
+    "message": "Einrichtungsanleitung"
+  },
+  "setupStep1": {
+    "message": "Besuchen Sie die <a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion-Integrationsseite</a> und erstellen Sie eine neue Integration"
+  },
+  "setupStep2": {
+    "message": "Generiertes API-Token unten kopieren"
+  },
+  "setupStep3": {
+    "message": "Seite in Notion erstellen oder auswählen als Sammlungsziel"
+  },
+  "setupStep4": {
+    "message": "\"Teilen\" auf der Zielseite klicken, Ihre Integration einladen und Bearbeitungsrechte gewähren"
+  },
+  "setupStep5": {
+    "message": "Seiten-ID unten kopieren (32-Zeichen-String aus URL)"
+  },
+  "setupStep5Example": {
+    "message": "Beispiel: der 32-Zeichen-ID Teil von https://notion.so/seitentitel-32-zeichen-id"
+  },
+  "setupStep6": {
+    "message": "Nach dem Speichern der Konfiguration wird die Erweiterung markierte Inhalte zur Seite hinzufügen"
+  },
+  "labelApiToken": {
+    "message": "Notion API-Token"
+  },
+  "labelPageId": {
+    "message": "Seiten-ID"
+  },
+  "helpApiToken": {
+    "message": "API-Token von der <a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion-Integrationsseite</a> abrufen"
+  },
+  "helpPageId": {
+    "message": "Von Notion-Seiten-URL abrufen, Format: https://notion.so/seitentitel-32-zeichen-id"
+  },
+  "buttonSaveSettings": {
+    "message": "Einstellungen speichern"
+  },
+  "buttonTestConnection": {
+    "message": "Verbindung testen"
+  },
+  "buttonSavingSettings": {
+    "message": "Speichern..."
+  },
+  "buttonTesting": {
+    "message": "Testen..."
+  },
+  "tagManagementTitle": {
+    "message": "Tag-Verwaltung"
+  },
+  "tagManagementDesc": {
+    "message": "Ihre Tag-Historie verwalten"
+  },
+  "buttonRefreshTags": {
+    "message": "Tags aktualisieren"
+  },
+  "buttonClearTags": {
+    "message": "Tags löschen"
+  },
+  "buttonRefreshing": {
+    "message": "Aktualisieren..."
+  },
+  "buttonClearing": {
+    "message": "Löschen..."
+  },
+  "tagsLoading": {
+    "message": "Tag-Historie laden..."
+  },
+  "tagsEmpty": {
+    "message": "Keine Tag-Historie gefunden"
+  },
+  "tagsCount": {
+    "message": "$COUNT$ Tags insgesamt:",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmClearTags": {
+    "message": "Sind Sie sicher, dass Sie alle Tag-Historie löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+  },
+  "confirmDeleteTag": {
+    "message": "Sind Sie sicher, dass Sie Tag \"$TAG$\" löschen möchten?",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
+  },
+  "targetPage": {
+    "message": "Zielseite: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "untitledPage": {
+    "message": "Unbenannte Seite"
+  }
+} 
