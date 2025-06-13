@@ -66,5 +66,5 @@
 
 如有任何问题，请联系插件作者：
 
-- 📧 邮箱：sheeplinbean@163.com
+- 📧 邮箱：linbinyoung@outlook.com
 - 📂 GitHub 项目主页：https://github.com/uestcbean/phoebe

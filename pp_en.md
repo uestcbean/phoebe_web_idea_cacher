@@ -66,5 +66,5 @@ If this privacy policy changes, we will update the version and date here. Contin
 
 For questions or concerns, please contact the developer:
 
-- 📧 Email: sheeplinbean@163.com
+- 📧 Email: linbinyoung@outlook.com
 - 📂 GitHub: https://github.com/uestcbean/phoebe
