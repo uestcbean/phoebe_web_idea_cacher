@@ -111,7 +111,7 @@
     "message": "Setup Guide"
   },
   "setupStep1": {
-    "message": "Visit Notion integrations page to create a new integration"
+    "message": "Visit <a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion integrations page</a> to create a new integration"
   },
   "setupStep2": {
     "message": "Copy the generated API token below"
@@ -126,7 +126,7 @@
     "message": "Copy the page ID below (32-character string from URL)"
   },
   "setupStep5Example": {
-    "message": "Example: the your-page-id part from https://notion.so/your-page-id"
+    "message": "Example: the 32-character ID part from https://notion.so/page-title-32-character-id"
   },
   "setupStep6": {
     "message": "After saving configuration, the extension will append selected content to the page"
@@ -138,10 +138,10 @@
     "message": "Page ID"
   },
   "helpApiToken": {
-    "message": "Get API token from Notion integrations page"
+    "message": "Get API token from <a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion integrations page</a>"
   },
   "helpPageId": {
-    "message": "Get from Notion page URL, format: https://notion.so/your-page-id"
+    "message": "Get from Notion page URL, format: https://notion.so/page-title-32-character-id"
   },
   "buttonSaveSettings": {
     "message": "Save Settings"

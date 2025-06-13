@@ -15,7 +15,7 @@ function initI18n() {
             } else if (element.hasAttribute('placeholder')) {
                 element.placeholder = localizedText;
             } else {
-                element.textContent = localizedText;
+                element.innerHTML = localizedText;
             }
         }
     });

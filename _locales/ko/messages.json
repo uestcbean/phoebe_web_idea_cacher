@@ -111,7 +111,7 @@
     "message": "설정 가이드"
   },
   "setupStep1": {
-    "message": "Notion 통합 페이지를 방문하여 새 통합을 만드세요"
+    "message": "<a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion 통합 페이지</a>를 방문하여 새 통합을 만드세요"
   },
   "setupStep2": {
     "message": "생성된 API 토큰을 아래에 복사하세요"
@@ -126,7 +126,7 @@
     "message": "페이지 ID(URL의 32자 문자열)를 아래에 복사하세요"
   },
   "setupStep5Example": {
-    "message": "예: https://notion.so/your-page-id의 your-page-id 부분"
+    "message": "예: https://notion.so/페이지제목-32자ID의 32자ID 부분"
   },
   "setupStep6": {
     "message": "설정 저장 후, 확장프로그램이 선택한 콘텐츠를 페이지에 추가합니다"
@@ -138,10 +138,10 @@
     "message": "페이지 ID"
   },
   "helpApiToken": {
-    "message": "Notion 통합 페이지에서 API 토큰을 가져오세요"
+    "message": "<a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion 통합 페이지</a>에서 API 토큰을 가져오세요"
   },
   "helpPageId": {
-    "message": "Notion 페이지 URL에서 가져오세요, 형식: https://notion.so/your-page-id"
+    "message": "Notion 페이지 URL에서 가져오세요, 형식: https://notion.so/페이지제목-32자ID"
   },
   "buttonSaveSettings": {
     "message": "설정 저장"

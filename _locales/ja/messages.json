@@ -111,7 +111,7 @@
     "message": "セットアップガイド"
   },
   "setupStep1": {
-    "message": "Notion統合ページにアクセスして新しい統合を作成"
+    "message": "<a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion統合ページ</a>にアクセスして新しい統合を作成"
   },
   "setupStep2": {
     "message": "生成されたAPIトークンを下にコピー"
@@ -126,7 +126,7 @@
     "message": "ページID（URLの32文字列）を下にコピー"
   },
   "setupStep5Example": {
-    "message": "例: https://notion.so/your-page-id の your-page-id 部分"
+    "message": "例: https://notion.so/ページタイトル-32文字ID の 32文字ID 部分"
   },
   "setupStep6": {
     "message": "設定を保存後、拡張機能は選択したコンテンツをページに追加します"
@@ -138,10 +138,10 @@
     "message": "ページ ID"
   },
   "helpApiToken": {
-    "message": "Notion統合ページからAPIトークンを取得"
+    "message": "<a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion統合ページ</a>からAPIトークンを取得"
   },
   "helpPageId": {
-    "message": "NotionページのURLから取得、形式: https://notion.so/your-page-id"
+    "message": "NotionページのURLから取得、形式: https://notion.so/ページタイトル-32文字ID"
   },
   "buttonSaveSettings": {
     "message": "設定を保存"
