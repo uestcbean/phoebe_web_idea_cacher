@@ -1,4 +1,4 @@
-# 🐕 Phoebe - スマートコンテンツコレクター
+# ![Logo](icons/icon48.png) Phoebe - スマートコンテンツコレクター
 
 *他の言語: [中文](README.md) | [English](README_en.md) | [한국어](README_ko.md) | [Deutsch](README_de.md)*
 

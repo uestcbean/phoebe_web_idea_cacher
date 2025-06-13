@@ -1,4 +1,4 @@
-# 🐕 Phoebe - Intelligenter Content-Collector
+# ![Logo](icons/icon48.png) Phoebe - Intelligenter Content-Collector
 
 *Andere Sprachen: [中文](README.md) | [English](README_en.md) | [日本語](README_ja.md) | [한국어](README_ko.md)*
 

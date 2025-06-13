@@ -1,4 +1,4 @@
-# 🐕 Phoebe - Smart Content Collector
+# ![Logo](icons/icon48.png) Phoebe - Smart Content Collector
 
 *Other languages: [中文](README.md) | [日本語](README_ja.md) | [한국어](README_ko.md) | [Deutsch](README_de.md)*
 

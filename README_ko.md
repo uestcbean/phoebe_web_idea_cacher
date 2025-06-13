@@ -1,4 +1,4 @@
-# 🐕 Phoebe - 스마트 콘텐츠 수집기
+# ![Logo](icons/icon48.png) Phoebe - 스마트 콘텐츠 수집기
 
 *다른 언어: [中文](README.md) | [English](README_en.md) | [日本語](README_ja.md) | [Deutsch](README_de.md)*
 
