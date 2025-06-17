@@ -47,15 +47,40 @@ function showSaveDialog(data) {
       padding: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       z-index: 10000;
-      width: 400px;
+      width: 480px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     ">
       <h3 style="margin: 0 0 15px 0; color: #333;">${getI18nText('saveDialogTitle', '保存到Notion')}</h3>
       
       <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('selectPage', '选择页面:')}</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <select id="notion-page-select" style="
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+          ">
+            <option value="">${getI18nText('loadingPages', '加载中...')}</option>
+          </select>
+          <button id="notion-create-page" style="
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+          ">${getI18nText('createNewPage', '新建页面')}</button>
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
         <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('saveDialogContent', '选中内容:')}</label>
         <div style="
-          max-height: 100px;
+          max-height: 120px;
           overflow-y: auto;
           padding: 8px;
           background: #f5f5f5;
@@ -147,7 +172,8 @@ function showSaveDialog(data) {
   
   document.body.appendChild(dialog);
   
-  // 初始化标签管理
+  // 初始化页面选择和标签管理
+  initPageSelection();
   initTagManagement();
   
   // 绑定事件
@@ -155,44 +181,28 @@ function showSaveDialog(data) {
     document.body.removeChild(dialog);
   };
   
+  document.getElementById('notion-create-page').onclick = async () => {
+    await showCreatePageDialog();
+  };
+  
   document.getElementById('notion-save').onclick = async () => {
-    const note = document.getElementById('notion-note').value;
-    const tags = getSelectedTags();
+    // 显示保存加载状态
+    await showSaveLoading();
     
-    const saveButton = document.getElementById('notion-save');
-    saveButton.textContent = getI18nText('buttonSaving', '保存中...');
-    saveButton.disabled = true;
+    // 禁用所有操作按钮
+    disableDialogButtons(true);
     
     try {
-      const response = await chrome.runtime.sendMessage({
-        action: "saveToNotionAPI",
-        data: {
-          ...data,
-          note: note,
-          tags: tags
-        }
-      });
-      
-      if (response && response.success) {
-        // 保存使用过的标签到历史记录
-        if (tags.length > 0) {
-          chrome.runtime.sendMessage({
-            action: "saveTagsToHistory",
-            tags: tags
-          });
-        }
-        
-        showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
-        document.body.removeChild(dialog);
-      } else {
-        const errorMsg = response && response.error ? response.error : getI18nText('errorNetwork', '未知错误，请检查网络连接');
-        throw new Error(errorMsg);
-      }
+      await saveContent();
+      hideSaveLoading();
+      closeDialog();
     } catch (error) {
-      console.error('保存错误:', error);
-      showNotification(`${getI18nText('saveFailed', '保存失败')}: ${error.message}`, 'error');
-      saveButton.textContent = getI18nText('buttonSave', '保存');
-      saveButton.disabled = false;
+      hideSaveLoading();
+      console.error('保存失败:', error);
+      showNotification(`❌ 保存失败: ${error.message}`, 'error');
+    } finally {
+      // 重新启用按钮
+      disableDialogButtons(false);
     }
   };
   
@@ -200,6 +210,307 @@ function showSaveDialog(data) {
   dialog.children[1].onclick = () => {
     document.body.removeChild(dialog);
   };
+}
+
+// 初始化页面选择
+async function initPageSelection() {
+  const pageSelect = document.getElementById('notion-page-select');
+  
+  try {
+    // 检查background script是否可用
+    if (chrome.runtime && chrome.runtime.id) {
+      // 获取配置
+      const config = await chrome.storage.sync.get(['notionToken', 'databaseId']);
+      if (!config.notionToken || !config.databaseId) {
+        pageSelect.innerHTML = `<option value="">${getI18nText('configureFirst', '请先配置Notion API密钥和Database ID')}</option>`;
+        return;
+      }
+      
+      // 获取真实的页面列表
+      const response = await chrome.runtime.sendMessage({
+        action: "getDatabasePages"
+      });
+      
+      if (response && response.success) {
+        if (response.pages.length === 0) {
+          pageSelect.innerHTML = `<option value="">${getI18nText('noPagesInDatabase', '数据库中暂无页面')}</option>`;
+        } else {
+          pageSelect.innerHTML = response.pages.map(page => 
+            `<option value="${page.id}">${page.title}</option>`
+          ).join('');
+        }
+      } else {
+        pageSelect.innerHTML = `<option value="">${getI18nText('loadPagesFailed', '加载页面失败')}</option>`;
+      }
+    } else {
+      pageSelect.innerHTML = `<option value="">${getI18nText('extensionNotInitialized', '扩展未初始化')}</option>`;
+    }
+    
+  } catch (error) {
+    console.error('加载页面列表失败:', error);
+    pageSelect.innerHTML = `<option value="">${getI18nText('loadPagesFailed', '加载页面失败')}</option>`;
+  }
+}
+
+// 显示创建页面的自定义弹窗
+async function showCreatePageDialog() {
+  // 获取正确的图标URL
+  const iconUrl = chrome.runtime.getURL('icons/icon48.png');
+  
+  const dialog = document.createElement('div');
+  dialog.id = 'create-page-dialog';
+  dialog.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10001;
+      width: 350px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    ">
+      <div style="display: flex; align-items: center; margin-bottom: 15px;">
+        <img src="${iconUrl}" style="width: 24px; height: 24px; margin-right: 8px;">
+        <h3 style="margin: 0; color: #333; font-size: 16px;">${getI18nText('createPageDialogTitle', '创建新页面')}</h3>
+      </div>
+      
+      <p style="margin: 0 0 15px 0; color: #666; font-size: 14px; line-height: 1.4;">
+        ${getI18nText('createPageDialogDesc', '请输入页面的名称，Phoebe会帮你自动创建到Notion中 ✨')}
+      </p>
+      
+      <input type="text" id="page-title-input" placeholder="${getI18nText('createPagePlaceholder', '例如：灵感收集、工作笔记...')}" style="
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+      ">
+      
+      <div id="page-name-error" style="
+        color: #d32f2f;
+        font-size: 13px;
+        margin-bottom: 10px;
+        display: none;
+      "></div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button id="cancel-create-page" style="
+          padding: 8px 16px;
+          background: #f0f0f0;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        ">${getI18nText('buttonCancel', '取消')}</button>
+        <button id="confirm-create-page" style="
+          padding: 8px 16px;
+          background: #0066cc;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        ">${getI18nText('buttonCreate', '创建')}</button>
+      </div>
+    </div>
+    
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+    "></div>
+  `;
+  
+  document.body.appendChild(dialog);
+  
+  // 聚焦输入框
+  const input = document.getElementById('page-title-input');
+  input.focus();
+  
+  // 绑定事件
+  document.getElementById('cancel-create-page').onclick = () => {
+    document.body.removeChild(dialog);
+  };
+  
+  document.getElementById('confirm-create-page').onclick = async () => {
+    const pageTitle = input.value.trim();
+    if (!pageTitle) {
+      showPageNameError(getI18nText('pageNameEmpty', '页面名称不能为空'));
+      return;
+    }
+    
+    // 检查是否有同名页面
+    if (await checkPageNameExists(pageTitle)) {
+      showPageNameError(getI18nText('pageNameExists', '已存在同名页面，请使用其他名称'));
+      return;
+    }
+    
+    // 开始创建
+    await startPageCreation(pageTitle);
+    document.body.removeChild(dialog);
+  };
+  
+  // 回车创建
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      document.getElementById('confirm-create-page').click();
+    }
+  });
+  
+  // 点击背景关闭
+  dialog.children[1].onclick = () => {
+    document.body.removeChild(dialog);
+  };
+}
+
+// 显示页面名称错误
+function showPageNameError(message) {
+  const errorEl = document.getElementById('page-name-error');
+  errorEl.textContent = message;
+  errorEl.style.display = 'block';
+  setTimeout(() => {
+    errorEl.style.display = 'none';
+  }, 3000);
+}
+
+// 检查页面名称是否已存在
+async function checkPageNameExists(pageTitle) {
+  try {
+    const pageSelect = document.getElementById('notion-page-select');
+    const options = pageSelect.querySelectorAll('option');
+    
+    for (const option of options) {
+      if (option.textContent.trim() === pageTitle.trim()) {
+        return true;
+      }
+    }
+    return false;
+  } catch (error) {
+    console.log('检查页面名称失败:', error);
+    return false;
+  }
+}
+
+// 开始创建页面（带加载状态）
+async function startPageCreation(pageTitle) {
+  // 显示加载提示
+  await showCreatePageLoading(pageTitle);
+  
+  // 禁用所有操作按钮
+  disableDialogButtons(true);
+  
+  try {
+    await createNewPage(pageTitle);
+    hideCreatePageLoading();
+  } catch (error) {
+    hideCreatePageLoading();
+    console.error('创建页面失败:', error);
+    showNotification(`❌ ${getI18nText('createPageFailed', '创建页面失败')}: ${error.message}`, 'error');
+  } finally {
+    // 重新启用按钮
+    disableDialogButtons(false);
+  }
+}
+
+// 显示创建页面加载状态
+async function showCreatePageLoading(pageTitle) {
+  // 获取正确的图标URL
+  const iconUrl = chrome.runtime.getURL('icons/icon48.png');
+  
+  const loadingDialog = document.createElement('div');
+  loadingDialog.id = 'create-page-loading';
+  loadingDialog.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10002;
+      width: 300px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      text-align: center;
+    ">
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+        <img src="${iconUrl}" style="width: 24px; height: 24px; margin-right: 8px;">
+        <h3 style="margin: 0; color: #333; font-size: 16px;">${getI18nText('phoebeWorking', 'Phoebe正在工作中')}</h3>
+      </div>
+      
+      <div style="
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f0f0f0;
+        border-top: 3px solid #0066cc;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px auto;
+      "></div>
+      
+      <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.4;">
+        ${getI18nText('creatingPage', '正在努力帮你创建页面"$PAGE$"...<br>请稍等片刻 ✨').replace('$PAGE$', pageTitle)}
+      </p>
+    </div>
+    
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 10001;
+    "></div>
+    
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+  
+  document.body.appendChild(loadingDialog);
+}
+
+// 隐藏创建页面加载状态
+function hideCreatePageLoading() {
+  const loadingDialog = document.getElementById('create-page-loading');
+  if (loadingDialog) {
+    document.body.removeChild(loadingDialog);
+  }
+}
+
+// 禁用/启用对话框按钮
+function disableDialogButtons(disable) {
+  const buttons = [
+    'notion-cancel',
+    'notion-save', 
+    'notion-create-page'
+  ];
+  
+  buttons.forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.disabled = disable;
+      btn.style.opacity = disable ? '0.6' : '1';
+      btn.style.cursor = disable ? 'not-allowed' : 'pointer';
+    }
+  });
 }
 
 // 显示通知
@@ -237,12 +548,18 @@ let allTags = [];
 async function initTagManagement() {
   // 获取标签历史
   try {
-    const response = await chrome.runtime.sendMessage({
-      action: "getTagHistory"
-    });
-    // 修复：从response.tags中获取标签数组
-    allTags = (response && response.success && response.tags) ? response.tags : [];
-    console.log('已加载标签历史:', allTags);
+    // 检查background script是否可用
+    if (chrome.runtime && chrome.runtime.id) {
+      const response = await chrome.runtime.sendMessage({
+        action: "getTagHistory"
+      });
+      // 修复：从response.tags中获取标签数组
+      allTags = (response && response.success && response.tags) ? response.tags : [];
+      console.log('已加载标签历史:', allTags);
+    } else {
+      console.log('Background script未初始化，跳过标签历史加载');
+      allTags = [];
+    }
   } catch (error) {
     console.log('获取标签历史失败:', error);
     allTags = [];
@@ -290,12 +607,14 @@ function addTag(tagText) {
   if (!allTags.includes(tagText)) {
     allTags.push(tagText);
     // 立即保存新标签到历史记录
-    chrome.runtime.sendMessage({
-      action: "saveTagsToHistory",
-      tags: [tagText]
-    }).catch(error => {
-      console.log('保存标签失败:', error);
-    });
+    if (chrome.runtime && chrome.runtime.id) {
+      chrome.runtime.sendMessage({
+        action: "saveTagsToHistory",
+        tags: [tagText]
+      }).catch(error => {
+        console.log('保存标签失败:', error);
+      });
+    }
   }
   renderSelectedTags();
 }
@@ -425,4 +744,158 @@ function hideSuggestionsDelayed() {
 
 function getSelectedTags() {
   return selectedTags;
+}
+
+// 创建新页面
+async function createNewPage(pageTitle) {
+  try {
+    // 检查background script是否可用
+    if (!chrome.runtime || !chrome.runtime.id) {
+      throw new Error(getI18nText('extensionNotInitializedRetry', '扩展未初始化，请刷新页面重试'));
+    }
+    
+    const response = await chrome.runtime.sendMessage({
+      action: "createPageInDatabase",
+      pageTitle: pageTitle
+    });
+    
+    if (response && response.success) {
+      const pageSelect = document.getElementById('notion-page-select');
+      
+      const option = document.createElement('option');
+      option.value = response.page.id;
+      option.textContent = response.page.title;
+      pageSelect.appendChild(option);
+      pageSelect.value = response.page.id;
+      
+      showNotification(`✅ ${getI18nText('pageCreatedSuccess', '新页面 "$PAGE$" 创建成功').replace('$PAGE$', pageTitle)}`, 'success');
+    } else {
+      throw new Error(response.error || getI18nText('createPageFailed', '创建页面失败'));
+    }
+  } catch (error) {
+    throw error; // 重新抛出错误给上层处理
+  }
+}
+
+// 显示保存加载状态
+async function showSaveLoading() {
+  // 获取正确的图标URL
+  const iconUrl = chrome.runtime.getURL('icons/icon48.png');
+  
+  const loadingDialog = document.createElement('div');
+  loadingDialog.id = 'save-loading';
+  loadingDialog.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10002;
+      width: 280px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      text-align: center;
+    ">
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+        <img src="${iconUrl}" style="width: 24px; height: 24px; margin-right: 8px;">
+        <h3 style="margin: 0; color: #333; font-size: 16px;">${getI18nText('phoebeSaving', 'Phoebe正在保存')}</h3>
+      </div>
+      
+      <div style="
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f0f0f0;
+        border-top: 3px solid #0066cc;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px auto;
+      "></div>
+      
+      <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.4;">
+        ${getI18nText('savingToNotion', '正在保存到Notion中...<br>请稍等片刻 ✨')}
+      </p>
+    </div>
+    
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 10001;
+    "></div>
+    
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+  
+  document.body.appendChild(loadingDialog);
+}
+
+// 隐藏保存加载状态
+function hideSaveLoading() {
+  const loadingDialog = document.getElementById('save-loading');
+  if (loadingDialog) {
+    document.body.removeChild(loadingDialog);
+  }
+}
+
+// 保存内容到Notion
+async function saveContent() {
+  const selectedPageId = document.getElementById('notion-page-select').value;
+  const note = document.getElementById('notion-note').value;
+  const tags = getSelectedTags();
+  
+  if (!selectedPageId) {
+    throw new Error(getI18nText('pleaseSelectPage', '请选择一个页面'));
+  }
+  
+  // 检查background script是否可用
+  if (!chrome.runtime || !chrome.runtime.id) {
+    throw new Error(getI18nText('extensionNotInitializedRetry', '扩展未初始化，请刷新页面重试'));
+  }
+  
+  const response = await chrome.runtime.sendMessage({
+    action: "saveToNotionAPI",
+    data: {
+      ...data,
+      pageId: selectedPageId,
+      note: note,
+      tags: tags
+    }
+  });
+  
+  if (response && response.success) {
+    // 保存使用过的标签到历史记录
+    if (tags.length > 0) {
+      chrome.runtime.sendMessage({
+        action: "saveTagsToHistory",
+        tags: tags
+      }).catch(error => {
+        console.log('保存标签历史失败:', error);
+      });
+    }
+    
+    showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
+  } else {
+    const errorMsg = response && response.error ? response.error : getI18nText('errorNetwork', '未知错误，请检查网络连接');
+    throw new Error(errorMsg);
+  }
+}
+
+// 关闭对话框
+function closeDialog() {
+  const dialog = document.getElementById('notion-dialog');
+  if (dialog) {
+    document.body.removeChild(dialog);
+  }
 }

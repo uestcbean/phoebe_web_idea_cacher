@@ -102,7 +102,7 @@
     "message": "未知错误，请检查网络连接"
   },
   "errorNotConfigured": {
-    "message": "请先在插件设置中配置Notion API密钥和页面ID"
+    "message": "请先在插件设置中配置Notion API密钥和数据库ID"
   },
   "settingsTitle": {
     "message": "Phoebe - 设置"
@@ -117,19 +117,19 @@
     "message": "复制生成的API密钥到下方"
   },
   "setupStep3": {
-    "message": "在Notion中创建或选择一个页面作为收集目标"
+    "message": "在Notion中创建或选择一个数据库作为收集目标"
   },
   "setupStep4": {
-    "message": "在目标页面点击右上角\"共享\"，邀请你创建的集成并给予编辑权限"
+    "message": "在目标数据库点击右上角\"共享\"，邀请你创建的集成并给予编辑权限"
   },
   "setupStep5": {
-    "message": "复制页面ID到下方（URL中的32位字符串）"
+    "message": "复制数据库ID到下方（URL中的32位字符串）"
   },
   "setupStep5Example": {
-    "message": "例如：https://notion.so/页面标题-32位页面ID 中的 32位页面ID 部分"
+    "message": "例如：https://www.notion.so/abc123def456...（直接复制32位字符串）"
   },
   "setupStep6": {
-    "message": "保存配置后，插件会将选中内容追加到该页面末尾"
+    "message": "保存配置后，插件可以选择现有页面或在数据库中创建新页面"
   },
   "labelApiToken": {
     "message": "Notion API 密钥"
@@ -137,12 +137,20 @@
   "labelPageId": {
     "message": "页面 ID"
   },
+  "labelDatabaseId": {
+    "message": "Database ID"
+  },
+
   "helpApiToken": {
     "message": "从 <a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion集成页面</a> 获取API密钥"
   },
   "helpPageId": {
     "message": "从Notion页面URL中获取，格式如：https://notion.so/页面标题-32位页面ID"
   },
+  "helpDatabaseId": {
+    "message": "从Notion数据库URL中获取，格式如：https://www.notion.so/32位数据库ID"
+  },
+
   "buttonSaveSettings": {
     "message": "保存设置"
   },
@@ -206,7 +214,142 @@
       }
     }
   },
+  "targetDatabase": {
+    "message": "目标数据库: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
   "untitledPage": {
     "message": "未命名页面"
+  },
+  "untitledDatabase": {
+    "message": "未命名数据库"
+  },
+  "selectPage": {
+    "message": "选择页面:"
+  },
+  "createNewPage": {
+    "message": "新建页面"
+  },
+  "loadingPages": {
+    "message": "加载中..."
+  },
+  "configureFirst": {
+    "message": "请先配置Notion API密钥和Database ID"
+  },
+  "noPagesInDatabase": {
+    "message": "数据库中暂无页面"
+  },
+  "loadPagesFailed": {
+    "message": "加载页面失败"
+  },
+  "extensionNotInitialized": {
+    "message": "扩展未初始化"
+  },
+  "createPageDialogTitle": {
+    "message": "创建新页面"
+  },
+  "createPageDialogDesc": {
+    "message": "请输入页面的名称，Phoebe会帮你自动创建到Notion中 ✨"
+  },
+  "createPagePlaceholder": {
+    "message": "例如：灵感收集、工作笔记..."
+  },
+  "buttonCreate": {
+    "message": "创建"
+  },
+  "pageNameEmpty": {
+    "message": "页面名称不能为空"
+  },
+  "pageNameExists": {
+    "message": "已存在同名页面，请使用其他名称"
+  },
+  "createPageFailed": {
+    "message": "创建页面失败"
+  },
+  "phoebeWorking": {
+    "message": "Phoebe正在工作中"
+  },
+  "creatingPage": {
+    "message": "正在努力帮你创建页面\"$PAGE$\"...<br>请稍等片刻 ✨",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "phoebeSaving": {
+    "message": "Phoebe正在保存"
+  },
+  "savingToNotion": {
+    "message": "正在保存到Notion中...<br>请稍等片刻 ✨"
+  },
+  "pageCreatedSuccess": {
+    "message": "新页面 \\\"$PAGE$\\\" 创建成功",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "extensionNotInitializedRetry": {
+    "message": "扩展未初始化，请刷新页面重试"
+  },
+  "pleaseSelectPage": {
+    "message": "请选择一个页面"
+  },
+  "pleaseFillApiAndDatabase": {
+    "message": "请填写API密钥和Database ID"
+  },
+  "configVerifyFailed": {
+    "message": "配置验证失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccess": {
+    "message": "配置已保存并验证！目标数据库: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccess": {
+    "message": "连接成功！目标数据库: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "saveFailed": {
+    "message": "保存失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionFailed": {
+    "message": "连接失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionError": {
+    "message": "连接错误: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 } 

@@ -16,17 +16,17 @@ function initI18n() {
 
 // 检查配置状态
 async function checkStatus() {
-    const config = await chrome.storage.sync.get(['notionToken', 'pageId']);
+    const config = await chrome.storage.sync.get(['notionToken', 'databaseId']);
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
     
-    if (config.notionToken && config.pageId) {
+    if (config.notionToken && config.databaseId) {
         statusDot.classList.add('connected');
         statusText.textContent = chrome.i18n.getMessage('statusConfigured') || '已配置，可以使用';
         
         // 测试连接
         try {
-            const response = await fetch(`https://api.notion.com/v1/pages/${config.pageId}`, {
+            const response = await fetch(`https://api.notion.com/v1/databases/${config.databaseId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${config.notionToken}`,
@@ -37,10 +37,8 @@ async function checkStatus() {
             if (response.ok) {
                 statusText.textContent = '✅ ' + (chrome.i18n.getMessage('statusConnected') || '连接正常');
                 const data = await response.json();
-                const pageTitle = data.properties?.title?.title?.[0]?.plain_text || 
-                                 data.properties?.Name?.title?.[0]?.plain_text || 
-                                 chrome.i18n.getMessage('untitledPage') || '未命名页面';
-                document.getElementById('stats').textContent = chrome.i18n.getMessage('targetPage', [pageTitle]) || `目标页面: ${pageTitle}`;
+                const dbTitle = data.title?.[0]?.plain_text || chrome.i18n.getMessage('untitledDatabase') || '未命名数据库';
+                document.getElementById('stats').textContent = chrome.i18n.getMessage('targetDatabase', [dbTitle]) || `目标数据库: ${dbTitle}`;
             } else {
                 statusDot.classList.remove('connected');
                 statusText.textContent = '❌ ' + (chrome.i18n.getMessage('statusDisconnected') || '连接失败');
