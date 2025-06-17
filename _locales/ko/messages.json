@@ -102,7 +102,7 @@
     "message": "알 수 없는 오류, 네트워크 연결을 확인해주세요"
   },
   "errorNotConfigured": {
-    "message": "먼저 확장프로그램 설정에서 Notion API 토큰과 페이지 ID를 설정해주세요"
+    "message": "먼저 확장프로그램 설정에서 Notion API 토큰과 데이터베이스 ID를 설정해주세요"
   },
   "settingsTitle": {
     "message": "Phoebe - 설정"
@@ -117,31 +117,31 @@
     "message": "생성된 API 토큰을 아래에 복사하세요"
   },
   "setupStep3": {
-    "message": "Notion에서 수집 대상으로 사용할 페이지를 만들거나 선택하세요"
+    "message": "Notion에서 수집 대상으로 사용할 데이터베이스를 만들거나 선택하세요"
   },
   "setupStep4": {
-    "message": "대상 페이지에서 \"공유\"를 클릭하고, 만든 통합을 초대하여 편집 권한을 부여하세요"
+    "message": "대상 데이터베이스에서 \"공유\"를 클릭하고, 만든 통합을 초대하여 편집 권한을 부여하세요"
   },
   "setupStep5": {
-    "message": "페이지 ID(URL의 32자 문자열)를 아래에 복사하세요"
+    "message": "데이터베이스 ID(URL의 32자 문자열)를 아래에 복사하세요"
   },
   "setupStep5Example": {
-    "message": "예: https://notion.so/페이지제목-32자ID의 32자ID 부분"
+    "message": "예: https://www.notion.so/abc123def456...（32자 문자열을 직접 복사）"
   },
   "setupStep6": {
-    "message": "설정 저장 후, 확장프로그램이 선택한 콘텐츠를 페이지에 추가합니다"
+    "message": "설정 저장 후, 확장프로그램이 기존 페이지를 선택하거나 데이터베이스에 새 페이지를 생성할 수 있습니다"
   },
   "labelApiToken": {
     "message": "Notion API 토큰"
   },
-  "labelPageId": {
-    "message": "페이지 ID"
+  "labelDatabaseId": {
+    "message": "데이터베이스 ID"
   },
   "helpApiToken": {
     "message": "<a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion 통합 페이지</a>에서 API 토큰을 가져오세요"
   },
-  "helpPageId": {
-    "message": "Notion 페이지 URL에서 가져오세요, 형식: https://notion.so/페이지제목-32자ID"
+  "helpDatabaseId": {
+    "message": "Notion 데이터베이스 URL에서 가져오세요, 형식: https://www.notion.so/32자데이터베이스ID"
   },
   "buttonSaveSettings": {
     "message": "설정 저장"
@@ -208,5 +208,140 @@
   },
   "untitledPage": {
     "message": "제목 없는 페이지"
+  },
+  "targetDatabase": {
+    "message": "대상 데이터베이스: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
+  "untitledDatabase": {
+    "message": "제목 없는 데이터베이스"
+  },
+  "selectPage": {
+    "message": "페이지 선택:"
+  },
+  "createNewPage": {
+    "message": "새 페이지 만들기"
+  },
+  "loadingPages": {
+    "message": "로딩 중..."
+  },
+  "configureFirst": {
+    "message": "먼저 Notion API 키와 Database ID를 설정해주세요"
+  },
+  "noPagesInDatabase": {
+    "message": "데이터베이스에 페이지가 없습니다"
+  },
+  "loadPagesFailed": {
+    "message": "페이지 로드 실패"
+  },
+  "extensionNotInitialized": {
+    "message": "확장프로그램이 초기화되지 않았습니다"
+  },
+  "createPageDialogTitle": {
+    "message": "새 페이지 만들기"
+  },
+  "createPageDialogDesc": {
+    "message": "페이지 이름을 입력하면 Phoebe가 Notion에 자동으로 생성해드립니다 ✨"
+  },
+  "createPagePlaceholder": {
+    "message": "예: 아이디어 수집, 업무 노트..."
+  },
+  "buttonCreate": {
+    "message": "생성"
+  },
+  "pageNameEmpty": {
+    "message": "페이지 이름을 입력해주세요"
+  },
+  "pageNameExists": {
+    "message": "같은 이름의 페이지가 존재합니다. 다른 이름을 사용해주세요"
+  },
+  "createPageFailed": {
+    "message": "페이지 생성 실패"
+  },
+  "phoebeWorking": {
+    "message": "Phoebe가 작업 중"
+  },
+  "creatingPage": {
+    "message": "페이지 \"$PAGE$\"를 생성하는 중입니다...<br>잠시만 기다려주세요 ✨",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "phoebeSaving": {
+    "message": "Phoebe가 저장 중"
+  },
+  "savingToNotion": {
+    "message": "Notion에 저장하는 중입니다...<br>잠시만 기다려주세요 ✨"
+  },
+  "pageCreatedSuccess": {
+    "message": "새 페이지 \\\"$PAGE$\\\"가 생성되었습니다",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "extensionNotInitializedRetry": {
+    "message": "확장프로그램이 초기화되지 않았습니다. 페이지를 새로고침하고 다시 시도해주세요"
+  },
+  "pleaseSelectPage": {
+    "message": "페이지를 선택해주세요"
+  },
+  "pleaseFillApiAndDatabase": {
+    "message": "API 키와 Database ID를 입력해주세요"
+  },
+  "configVerifyFailed": {
+    "message": "설정 검증 실패: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccess": {
+    "message": "설정이 저장되고 검증되었습니다! 대상 데이터베이스: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccess": {
+    "message": "연결 성공! 대상 데이터베이스: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "saveFailed": {
+    "message": "저장 실패: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionFailed": {
+    "message": "연결 실패: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionError": {
+    "message": "연결 오류: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 } 

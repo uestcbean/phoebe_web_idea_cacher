@@ -102,7 +102,7 @@
     "message": "Unknown error, please check network connection"
   },
   "errorNotConfigured": {
-    "message": "Please configure Notion API token and page ID in extension settings first"
+    "message": "Please configure Notion API token and database ID in extension settings first"
   },
   "settingsTitle": {
     "message": "Phoebe - Settings"
@@ -117,19 +117,19 @@
     "message": "Copy the generated API token below"
   },
   "setupStep3": {
-    "message": "Create or select a page in Notion as collection target"
+    "message": "Create or select a database in Notion as collection target"
   },
   "setupStep4": {
-    "message": "Click \"Share\" on the target page, invite your integration and grant edit permissions"
+    "message": "Click \"Share\" on the target database, invite your integration and grant edit permissions"
   },
   "setupStep5": {
-    "message": "Copy the page ID below (32-character string from URL)"
+    "message": "Copy the database ID below (32-character string from URL)"
   },
   "setupStep5Example": {
-    "message": "Example: the 32-character ID part from https://notion.so/page-title-32-character-id"
+    "message": "Example: https://www.notion.so/abc123def456... (copy the 32-character string)"
   },
   "setupStep6": {
-    "message": "After saving configuration, the extension will append selected content to the page"
+    "message": "After saving configuration, the extension can select existing pages or create new pages in the database"
   },
   "labelApiToken": {
     "message": "Notion API Token"
@@ -137,12 +137,20 @@
   "labelPageId": {
     "message": "Page ID"
   },
+  "labelDatabaseId": {
+    "message": "Database ID"
+  },
+
   "helpApiToken": {
     "message": "Get API token from <a href=\"https://www.notion.so/my-integrations\" target=\"_blank\">Notion integrations page</a>"
   },
   "helpPageId": {
     "message": "Get from Notion page URL, format: https://notion.so/page-title-32-character-id"
   },
+  "helpDatabaseId": {
+    "message": "Get from Notion database URL, format: https://www.notion.so/32-character-database-id"
+  },
+
   "buttonSaveSettings": {
     "message": "Save Settings"
   },
@@ -206,7 +214,142 @@
       }
     }
   },
+  "targetDatabase": {
+    "message": "Target database: $TITLE$",
+    "placeholders": {
+      "title": {
+        "content": "$1"
+      }
+    }
+  },
   "untitledPage": {
     "message": "Untitled page"
+  },
+  "untitledDatabase": {
+    "message": "Untitled database"
+  },
+  "selectPage": {
+    "message": "Select page:"
+  },
+  "createNewPage": {
+    "message": "New Page"
+  },
+  "loadingPages": {
+    "message": "Loading..."
+  },
+  "configureFirst": {
+    "message": "Please configure Notion API token and Database ID first"
+  },
+  "noPagesInDatabase": {
+    "message": "No pages in database"
+  },
+  "loadPagesFailed": {
+    "message": "Failed to load pages"
+  },
+  "extensionNotInitialized": {
+    "message": "Extension not initialized"
+  },
+  "createPageDialogTitle": {
+    "message": "Create New Page"
+  },
+  "createPageDialogDesc": {
+    "message": "Enter the page name, Phoebe will help you create it in Notion ✨"
+  },
+  "createPagePlaceholder": {
+    "message": "e.g.: Ideas Collection, Work Notes..."
+  },
+  "buttonCreate": {
+    "message": "Create"
+  },
+  "pageNameEmpty": {
+    "message": "Page name cannot be empty"
+  },
+  "pageNameExists": {
+    "message": "Page with this name already exists, please use a different name"
+  },
+  "createPageFailed": {
+    "message": "Failed to create page"
+  },
+  "phoebeWorking": {
+    "message": "Phoebe is working"
+  },
+  "creatingPage": {
+    "message": "Creating page \\\"$PAGE$\\\" for you...<br>Please wait ✨",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "phoebeSaving": {
+    "message": "Phoebe is saving"
+  },
+  "savingToNotion": {
+    "message": "Saving to Notion...<br>Please wait ✨"
+  },
+  "pageCreatedSuccess": {
+    "message": "New page \\\"$PAGE$\\\" created successfully",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "extensionNotInitializedRetry": {
+    "message": "Extension not initialized, please refresh the page and try again"
+  },
+  "pleaseSelectPage": {
+    "message": "Please select a page"
+  },
+  "pleaseFillApiAndDatabase": {
+    "message": "Please fill in API token and Database ID"
+  },
+  "configVerifyFailed": {
+    "message": "Configuration verification failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccess": {
+    "message": "Configuration saved and verified! Target database: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccess": {
+    "message": "Connection successful! Target database: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "saveFailed": {
+    "message": "Save failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionFailed": {
+    "message": "Connection failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionError": {
+    "message": "Connection error: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 } 

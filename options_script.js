@@ -3,14 +3,14 @@
 // 加载已保存的设置
 async function loadSettings() {
     try {
-        const config = await chrome.storage.sync.get(['notionToken', 'pageId']);
+        const config = await chrome.storage.sync.get(['notionToken', 'databaseId']);
         
         if (config.notionToken) {
             document.getElementById('notionToken').value = config.notionToken;
         }
         
-        if (config.pageId) {
-            document.getElementById('pageId').value = config.pageId;
+        if (config.databaseId) {
+            document.getElementById('databaseId').value = config.databaseId;
         }
     } catch (error) {
         console.error('加载设置失败:', error);
@@ -22,10 +22,10 @@ async function saveSettings(event) {
     event.preventDefault();
     
     const token = document.getElementById('notionToken').value.trim();
-    const pageId = document.getElementById('pageId').value.trim();
+    const databaseId = document.getElementById('databaseId').value.trim();
     
-    if (!token || !pageId) {
-        showStatus('请填写所有必填字段', 'error');
+    if (!token || !databaseId) {
+        showStatus(getI18nMessage('pleaseFillApiAndDatabase') || '请填写API密钥和Database ID', 'error');
         return;
     }
     
@@ -36,7 +36,7 @@ async function saveSettings(event) {
     
     try {
         // 先测试连接
-        const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -48,20 +48,22 @@ async function saveSettings(event) {
             // 保存到Chrome存储
             await chrome.storage.sync.set({
                 notionToken: token,
-                pageId: pageId
+                databaseId: databaseId
             });
             
             const data = await response.json();
-            const pageTitle = data.properties?.title?.title?.[0]?.plain_text || 
-                             data.properties?.Name?.title?.[0]?.plain_text || 
-                             '未命名页面';
-            showStatus(`✅ 配置已保存并验证！目标页面: ${pageTitle}`, 'success');
+            const dbTitle = data.title?.[0]?.plain_text || getI18nMessage('untitledDatabase') || '未命名数据库';
+            const successMsg = getI18nMessage('configSaveSuccess') || '配置已保存并验证！目标数据库: $DATABASE$';
+            showStatus(`✅ ${successMsg.replace('$DATABASE$', dbTitle)}`, 'success');
         } else {
             const errorData = await response.json();
-            showStatus(`❌ 配置验证失败: ${errorData.message || '请检查API密钥和页面ID'}`, 'error');
+            const errorMsg = getI18nMessage('configVerifyFailed') || '配置验证失败: $ERROR$';
+            const defaultError = getI18nMessage('pleaseFillApiAndDatabase') || '请检查API密钥和Database ID';
+            showStatus(`❌ ${errorMsg.replace('$ERROR$', errorData.message || defaultError)}`, 'error');
         }
     } catch (error) {
-        showStatus(`❌ 保存失败: ${error.message}`, 'error');
+        const saveFailedMsg = getI18nMessage('saveFailed') || '保存失败: $ERROR$';
+        showStatus(`❌ ${saveFailedMsg.replace('$ERROR$', error.message)}`, 'error');
     } finally {
         saveBtn.textContent = originalText;
         saveBtn.disabled = false;
@@ -71,10 +73,10 @@ async function saveSettings(event) {
 // 测试Notion API连接
 async function testConnection() {
     const token = document.getElementById('notionToken').value.trim();
-    const pageId = document.getElementById('pageId').value.trim();
+    const databaseId = document.getElementById('databaseId').value.trim();
     
-    if (!token || !pageId) {
-        showStatus('请先填写API密钥和页面ID', 'error');
+    if (!token || !databaseId) {
+        showStatus(getI18nMessage('pleaseFillApiAndDatabase') || '请先填写API密钥和Database ID', 'error');
         return;
     }
     
@@ -84,7 +86,7 @@ async function testConnection() {
     testBtn.disabled = true;
     
     try {
-        const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+        const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -95,16 +97,17 @@ async function testConnection() {
         
         if (response.ok) {
             const data = await response.json();
-            const pageTitle = data.properties?.title?.title?.[0]?.plain_text || 
-                             data.properties?.Name?.title?.[0]?.plain_text || 
-                             '未命名页面';
-            showStatus(`✅ 连接成功！目标页面: ${pageTitle}`, 'success');
+            const dbTitle = data.title?.[0]?.plain_text || getI18nMessage('untitledDatabase') || '未命名数据库';
+            const successMsg = getI18nMessage('connectionSuccess') || '连接成功！目标数据库: $DATABASE$';
+            showStatus(`✅ ${successMsg.replace('$DATABASE$', dbTitle)}`, 'success');
         } else {
             const errorData = await response.json();
-            showStatus(`❌ 连接失败: ${errorData.message || '未知错误'}`, 'error');
+            const failedMsg = getI18nMessage('connectionFailed') || '连接失败: $ERROR$';
+            showStatus(`❌ ${failedMsg.replace('$ERROR$', errorData.message || '未知错误')}`, 'error');
         }
     } catch (error) {
-        showStatus(`❌ 连接错误: ${error.message}`, 'error');
+        const errorMsg = getI18nMessage('connectionError') || '连接错误: $ERROR$';
+        showStatus(`❌ ${errorMsg.replace('$ERROR$', error.message)}`, 'error');
     } finally {
         testBtn.textContent = originalText;
         testBtn.disabled = false;
