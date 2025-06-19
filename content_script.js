@@ -24,36 +24,59 @@ function getI18nText(key, defaultText = '') {
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.action === "saveToNotion") {
     await initI18nTexts(); // 每次显示对话框前获取最新的本地化文本
-    showSaveDialog(request.data);
+    await showSaveDialog(request.data);
   } else if (request.action === "showError") {
     showNotification(request.message, 'error');
   }
 });
 
 // 显示保存对话框
-function showSaveDialog(data) {
+async function showSaveDialog(data) {
+  // 先获取配置以确定对话框类型
+  const config = await chrome.storage.sync.get(['mode', 'targetPageId', 'targetDatabaseId', 'databaseId']);
+  const mode = config.mode || 'database'; // 默认数据库模式，兼容旧配置
+  
+  console.log('显示保存对话框，模式:', mode, config);
+  
   // 创建对话框
   const dialog = document.createElement('div');
   dialog.id = 'notion-save-dialog';
-  dialog.innerHTML = `
-    <div style="
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 10000;
-      width: 480px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    ">
-      <h3 style="margin: 0 0 15px 0; color: #333;">${getI18nText('saveDialogTitle', '保存到Notion')}</h3>
-      
+  
+  // 根据模式生成不同的页面选择区域
+  let pageSelectionHtml = '';
+  if (mode === 'page') {
+    // 页面模式：显示目标页面信息，不提供选择
+    // 尝试获取页面标题，如果无法获取则显示默认文本
+    let targetPageName = getI18nText('targetPageConfigured', '已配置目标页面');
+    
+    // 异步获取页面标题（稍后会更新显示）
+    if (config.targetPageId && config.notionToken) {
+      // 这里先显示默认文本，稍后通过initPageInfo更新
+      targetPageName = getI18nText('loadingPageInfo', '正在获取页面信息...');
+    }
+    
+    pageSelectionHtml = `
       <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('selectPage', '选择页面:')}</label>
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveToTargetPage', '保存到目标页面:')}</label>
+        <div id="target-page-info" style="
+          padding: 8px 12px;
+          background: #f0f8ff;
+          border: 1px solid #b3d9ff;
+          border-radius: 4px;
+          font-size: 14px;
+          color: #0066cc;
+        ">
+          📄 ${targetPageName}
+        </div>
+        <div style="font-size: 12px; color: #666; margin-top: 4px;">
+          ${getI18nText('contentWillAppend', '内容将直接追加到此页面末尾')}
+        </div>
+      </div>`;
+  } else {
+    // 数据库模式：提供页面选择和新建选项
+    pageSelectionHtml = `
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('selectPage', '选择页面:')}</label>
         <div style="display: flex; gap: 8px; align-items: center;">
           <select id="notion-page-select" style="
             flex: 1;
@@ -75,11 +98,34 @@ function showSaveDialog(data) {
             white-space: nowrap;
           ">${getI18nText('createNewPage', '新建页面')}</button>
         </div>
-      </div>
+      </div>`;
+  }
+  
+  dialog.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      width: 480px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    ">
+      <h3 style="margin: 0 0 15px 0; color: #333 !important; display: flex; align-items: center; gap: 8px; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important; font-weight: 600 !important; font-size: 18px !important;">
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
+        ${getI18nText('saveDialogTitle', '保存到Notion')}
+      </h3>
+      
+      ${pageSelectionHtml}
       
       <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('saveDialogContent', '选中内容:')}</label>
-        <div style="
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveDialogContent', '选中内容:')}</label>
+        <div id="selected-content-display" style="
           max-height: 120px;
           overflow-y: auto;
           padding: 8px;
@@ -87,11 +133,38 @@ function showSaveDialog(data) {
           border-radius: 4px;
           font-size: 14px;
           line-height: 1.4;
-        ">${data.content}</div>
+          color: #333 !important;
+          text-decoration: none !important;
+          /* 强制重置所有可能影响文本显示的CSS属性 */
+          font-weight: normal !important;
+          font-style: normal !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          word-spacing: normal !important;
+          text-shadow: none !important;
+          background-color: #f5f5f5 !important;
+          border: 1px solid #e0e0e0 !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+          /* 防止链接样式影响 */
+          cursor: default !important;
+          /* 防止被页面的全局选择器影响 */
+          all: revert !important;
+          /* 然后重新设置我们需要的样式 */
+          max-height: 120px !important;
+          overflow-y: auto !important;
+          padding: 8px !important;
+          background: #f5f5f5 !important;
+          border-radius: 4px !important;
+          font-size: 14px !important;
+          line-height: 1.4 !important;
+          color: #333 !important;
+          text-decoration: none !important;
+          display: block !important;
+        "></div>
       </div>
       
       <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('saveDialogNote', '备注 (可选):')}</label>
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveDialogNote', '备注 (可选):')}</label>
         <textarea id="notion-note" placeholder="${getI18nText('saveDialogNotePlaceholder', '添加备注...')}" style="
           width: 100%;
           height: 60px;
@@ -105,7 +178,7 @@ function showSaveDialog(data) {
       </div>
       
       <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('saveDialogTags', '标签 (可选):')}</label>
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveDialogTags', '标签 (可选):')}</label>
         <div id="notion-tags-container" style="
           border: 1px solid #ddd;
           border-radius: 4px;
@@ -172,18 +245,183 @@ function showSaveDialog(data) {
   
   document.body.appendChild(dialog);
   
-  // 初始化页面选择和标签管理
-  initPageSelection();
+  // 强制修复所有可能被页面CSS影响的元素样式
+  setTimeout(() => {
+    const allLabels = dialog.querySelectorAll('label');
+    allLabels.forEach(label => {
+      // 强制重置label样式，防止被页面CSS覆盖
+      label.style.setProperty('color', '#333', 'important');
+      label.style.setProperty('text-decoration', 'none', 'important');
+      label.style.setProperty('font-family', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', 'important');
+      label.style.setProperty('font-style', 'normal', 'important');
+      label.style.setProperty('text-transform', 'none', 'important');
+      label.style.setProperty('letter-spacing', 'normal', 'important');
+      label.style.setProperty('text-shadow', 'none', 'important');
+      label.style.setProperty('cursor', 'default', 'important');
+      label.style.setProperty('font-weight', '500', 'important');
+      label.style.setProperty('font-size', '14px', 'important');
+    });
+    
+    // 也修复其他可能的文本元素
+    const allTextElements = dialog.querySelectorAll('h3, div, span, p');
+    allTextElements.forEach(element => {
+      if (element.id !== 'selected-content-display') { // 排除已经处理过的内容显示区域
+        element.style.setProperty('color', '#333', 'important');
+        element.style.setProperty('text-decoration', 'none', 'important');
+        element.style.setProperty('font-family', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', 'important');
+      }
+    });
+    
+    console.log('🛡️ [强制样式修复] 已应用JavaScript样式保护');
+  }, 10);
+  
+  // 安全地设置选中内容（避免HTML注入和样式继承问题）
+  const contentDisplay = document.getElementById('selected-content-display');
+  if (contentDisplay) {
+    contentDisplay.textContent = data.content; // 使用textContent而不是innerHTML
+    
+    // 调试：检查可能影响文本颜色的CSS规则
+    console.log('🎨 [CSS调试] 检查选中内容显示区域的样式:');
+    const computedStyle = window.getComputedStyle(contentDisplay);
+    console.log('  - 实际颜色:', computedStyle.color);
+    console.log('  - 实际背景:', computedStyle.backgroundColor);
+    console.log('  - 实际字体:', computedStyle.fontFamily);
+    console.log('  - 文本装饰:', computedStyle.textDecoration);
+    console.log('  - 字体粗细:', computedStyle.fontWeight);
+    
+    // 检查页面是否有可能影响插件的全局CSS规则
+    const stylesheets = document.styleSheets;
+    let problematicRules = [];
+    
+    try {
+      for (let i = 0; i < stylesheets.length; i++) {
+        const sheet = stylesheets[i];
+        try {
+          const rules = sheet.cssRules || sheet.rules;
+          for (let j = 0; j < rules.length; j++) {
+            const rule = rules[j];
+            if (rule.selectorText) {
+              // 检查可能影响插件的选择器
+              if (rule.selectorText.includes('*') || 
+                  rule.selectorText.includes('div') ||
+                  rule.selectorText.includes(':visited') ||
+                  rule.selectorText.includes('a') ||
+                  rule.cssText.includes('color:') && rule.cssText.includes('purple')) {
+                problematicRules.push({
+                  selector: rule.selectorText,
+                  cssText: rule.cssText,
+                  href: sheet.href
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.log('  - 无法访问样式表:', sheet.href, e.message);
+        }
+      }
+      
+      if (problematicRules.length > 0) {
+        console.log('🚨 [CSS调试] 发现可能影响插件的CSS规则:');
+        problematicRules.forEach((rule, index) => {
+          console.log(`  ${index + 1}. 选择器: ${rule.selector}`);
+          console.log(`     规则: ${rule.cssText}`);
+          console.log(`     来源: ${rule.href || '内联样式'}`);
+        });
+      } else {
+        console.log('✅ [CSS调试] 未发现明显的问题CSS规则');
+      }
+    } catch (e) {
+      console.log('❌ [CSS调试] 无法完整检查样式表:', e.message);
+    }
+  }
+  
+  // 初始化标签管理（总是需要）
   initTagManagement();
+  
+  // 只在数据库模式下初始化页面选择
+  if (mode === 'database') {
+    initPageSelection();
+      } else if (mode === 'page') {
+    // 页面模式下获取并显示页面信息
+    // 重新获取完整配置，确保包含notionToken
+    const fullConfig = await chrome.storage.sync.get(['notionToken', 'targetPageId']);
+    const configForPageInfo = { ...config, ...fullConfig };
+    initPageInfo(configForPageInfo);
+  }
+  
+  // 创建一个闭包函数来保存内容，确保data可以被访问到
+  const saveContentWithData = async () => {
+    const note = document.getElementById('notion-note').value;
+    const tags = getSelectedTags();
+    
+    // 检查background script是否可用
+    if (!chrome.runtime || !chrome.runtime.id) {
+      throw new Error(getI18nText('extensionNotInitializedRetry', '扩展未初始化，请刷新页面重试'));
+    }
+    
+    // 使用已获取的配置
+    console.log('保存时的配置:', { mode, config });
+    
+    let saveData = {
+      ...data,
+      note: note,
+      tags: tags
+    };
+    
+    if (mode === 'page') {
+      // 普通文档模式：直接追加到预设页面
+      if (!config.targetPageId) {
+        throw new Error(getI18nText('configureFirst', '请先在设置中配置目标页面'));
+      }
+      saveData.pageId = config.targetPageId;
+      console.log('使用普通文档模式，页面ID:', config.targetPageId);
+    } else if (mode === 'database') {
+      // 数据库模式：根据用户选择的页面决定
+      const selectedPageId = document.getElementById('notion-page-select').value;
+      
+      if (!selectedPageId) {
+        throw new Error(getI18nText('pleaseSelectPage', '请选择一个页面'));
+      }
+      
+      saveData.pageId = selectedPageId;
+      console.log('使用数据库模式，选择的页面ID:', selectedPageId);
+    }
+    
+    const response = await chrome.runtime.sendMessage({
+      action: "saveToNotionAPI",
+      data: saveData
+    });
+    
+    if (response && response.success) {
+      // 保存使用过的标签到历史记录
+      if (tags.length > 0) {
+        chrome.runtime.sendMessage({
+          action: "saveTagsToHistory",
+          tags: tags
+        }).catch(error => {
+          console.log('保存标签历史失败:', error);
+        });
+      }
+      
+      showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
+    } else {
+      const errorMsg = response && response.error ? response.error : getI18nText('errorNetwork', '未知错误，请检查网络连接');
+      throw new Error(errorMsg);
+    }
+  };
   
   // 绑定事件
   document.getElementById('notion-cancel').onclick = () => {
     document.body.removeChild(dialog);
   };
   
-  document.getElementById('notion-create-page').onclick = async () => {
-    await showCreatePageDialog();
-  };
+  // 只在数据库模式下绑定新建页面按钮事件
+  const createPageBtn = document.getElementById('notion-create-page');
+  if (createPageBtn) {
+    createPageBtn.onclick = async () => {
+      await showCreatePageDialog();
+    };
+  }
   
   document.getElementById('notion-save').onclick = async () => {
     // 显示保存加载状态
@@ -193,7 +431,7 @@ function showSaveDialog(data) {
     disableDialogButtons(true);
     
     try {
-      await saveContent();
+      await saveContentWithData();
       hideSaveLoading();
       closeDialog();
     } catch (error) {
@@ -212,6 +450,49 @@ function showSaveDialog(data) {
   };
 }
 
+// 初始化页面信息显示（页面模式）
+async function initPageInfo(config) {
+  const pageInfoDiv = document.getElementById('target-page-info');
+  
+  console.log('initPageInfo调用，config:', config);
+  console.log('targetPageId:', config.targetPageId, 'notionToken存在:', !!config.notionToken);
+  
+  if (!pageInfoDiv || !config.targetPageId || !config.notionToken) {
+    console.log('配置不完整，显示默认文本');
+    if (pageInfoDiv) {
+      pageInfoDiv.innerHTML = `📄 ${getI18nText('targetPageConfigured', '已配置目标页面')}`;
+    }
+    return;
+  }
+  
+  try {
+    console.log('开始获取页面信息，pageId:', config.targetPageId);
+    
+    // 通过background script获取页面信息
+    const response = await chrome.runtime.sendMessage({
+      action: 'getPageInfo',
+      pageId: config.targetPageId,
+      notionToken: config.notionToken
+    });
+    
+    console.log('Background script响应:', response);
+    
+    if (response && response.success) {
+      const pageInfo = response.pageInfo;
+      console.log('页面信息:', pageInfo);
+      
+      pageInfoDiv.innerHTML = `📄 ${pageInfo.title}`;
+      console.log('页面信息更新完成:', pageInfo.title);
+    } else {
+      console.error('获取页面信息失败:', response?.error || '未知错误');
+      pageInfoDiv.innerHTML = `📄 ${getI18nText('targetPageConfigured', '已配置目标页面')}`;
+    }
+  } catch (error) {
+    console.error('获取页面信息失败:', error);
+    pageInfoDiv.innerHTML = `📄 ${getI18nText('targetPageConfigured', '已配置目标页面')}`;
+  }
+}
+
 // 初始化页面选择
 async function initPageSelection() {
   const pageSelect = document.getElementById('notion-page-select');
@@ -220,27 +501,63 @@ async function initPageSelection() {
     // 检查background script是否可用
     if (chrome.runtime && chrome.runtime.id) {
       // 获取配置
-      const config = await chrome.storage.sync.get(['notionToken', 'databaseId']);
-      if (!config.notionToken || !config.databaseId) {
-        pageSelect.innerHTML = `<option value="">${getI18nText('configureFirst', '请先配置Notion API密钥和Database ID')}</option>`;
+      const config = await chrome.storage.sync.get(['notionToken', 'mode', 'targetPageId', 'targetDatabaseId', 'databaseId']);
+      
+      if (!config.notionToken) {
+        pageSelect.innerHTML = `<option value="">${getI18nText('configureFirst', '请先配置Notion API密钥')}</option>`;
         return;
       }
       
-      // 获取真实的页面列表
-      const response = await chrome.runtime.sendMessage({
-        action: "getDatabasePages"
-      });
+      const mode = config.mode || 'database'; // 默认数据库模式，兼容旧配置
+      console.log('当前配置模式:', mode, config);
       
-      if (response && response.success) {
-        if (response.pages.length === 0) {
-          pageSelect.innerHTML = `<option value="">${getI18nText('noPagesInDatabase', '数据库中暂无页面')}</option>`;
+      if (mode === 'page') {
+        // 普通文档模式：不显示页面选择，因为内容直接追加到预设页面
+        if (config.targetPageId) {
+          pageSelect.innerHTML = `<option value="${config.targetPageId}" selected>${getI18nText('targetPageConfigured', '已配置目标页面')}</option>`;
+          pageSelect.disabled = true;
         } else {
-          pageSelect.innerHTML = response.pages.map(page => 
-            `<option value="${page.id}">${page.title}</option>`
-          ).join('');
+          pageSelect.innerHTML = `<option value="">${getI18nText('configureFirst', '请先在设置中配置目标页面')}</option>`;
         }
-      } else {
-        pageSelect.innerHTML = `<option value="">${getI18nText('loadPagesFailed', '加载页面失败')}</option>`;
+        // 隐藏新建页面按钮，因为普通文档模式不需要
+        const createPageBtn = document.getElementById('notion-create-page');
+        if (createPageBtn) {
+          createPageBtn.style.display = 'none';
+        }
+        return;
+      } else if (mode === 'database') {
+        // 数据库模式：显示数据库中的页面列表供选择
+        const databaseId = config.targetDatabaseId || config.databaseId; // 兼容旧配置
+        if (!databaseId) {
+          pageSelect.innerHTML = `<option value="">${getI18nText('configureFirst', '请先在设置中配置目标数据库')}</option>`;
+          return;
+        }
+        
+        // 显示新建页面按钮
+        const createPageBtn = document.getElementById('notion-create-page');
+        if (createPageBtn) {
+          createPageBtn.style.display = 'inline-block';
+        }
+        
+        // 获取数据库中的页面列表
+        const response = await chrome.runtime.sendMessage({
+          action: "getDatabasePages"
+        });
+        
+        if (response && response.success) {
+          if (response.pages.length === 0) {
+            pageSelect.innerHTML = `<option value="">${getI18nText('noPagesInDatabase', '数据库中暂无页面')}</option>`;
+          } else {
+            // 添加默认提示选项
+            let optionsHtml = `<option value="">${getI18nText('selectPage', '选择页面:')}</option>`;
+            optionsHtml += response.pages.map(page => 
+              `<option value="${page.id}">${page.title}</option>`
+            ).join('');
+            pageSelect.innerHTML = optionsHtml;
+          }
+        } else {
+          pageSelect.innerHTML = `<option value="">${getI18nText('loadPagesFailed', '加载页面失败')}</option>`;
+        }
       }
     } else {
       pageSelect.innerHTML = `<option value="">${getI18nText('extensionNotInitialized', '扩展未初始化')}</option>`;
@@ -849,53 +1166,165 @@ function hideSaveLoading() {
   }
 }
 
-// 保存内容到Notion
-async function saveContent() {
-  const selectedPageId = document.getElementById('notion-page-select').value;
-  const note = document.getElementById('notion-note').value;
-  const tags = getSelectedTags();
-  
-  if (!selectedPageId) {
-    throw new Error(getI18nText('pleaseSelectPage', '请选择一个页面'));
-  }
-  
-  // 检查background script是否可用
-  if (!chrome.runtime || !chrome.runtime.id) {
-    throw new Error(getI18nText('extensionNotInitializedRetry', '扩展未初始化，请刷新页面重试'));
-  }
-  
-  const response = await chrome.runtime.sendMessage({
-    action: "saveToNotionAPI",
-    data: {
-      ...data,
-      pageId: selectedPageId,
-      note: note,
-      tags: tags
-    }
-  });
-  
-  if (response && response.success) {
-    // 保存使用过的标签到历史记录
-    if (tags.length > 0) {
-      chrome.runtime.sendMessage({
-        action: "saveTagsToHistory",
-        tags: tags
-      }).catch(error => {
-        console.log('保存标签历史失败:', error);
-      });
-    }
-    
-    showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
-  } else {
-    const errorMsg = response && response.error ? response.error : getI18nText('errorNetwork', '未知错误，请检查网络连接');
-    throw new Error(errorMsg);
-  }
-}
-
 // 关闭对话框
 function closeDialog() {
-  const dialog = document.getElementById('notion-dialog');
+  const dialog = document.getElementById('notion-save-dialog');
   if (dialog) {
     document.body.removeChild(dialog);
   }
 }
+
+// 终极CSS隔离方案：使用Shadow DOM（备选方案）
+function createIsolatedDialog(data) {
+  // 创建宿主元素
+  const shadowHost = document.createElement('div');
+  shadowHost.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 999999 !important;
+    pointer-events: none !important;
+  `;
+  
+  // 创建Shadow DOM
+  const shadowRoot = shadowHost.attachShadow({ mode: 'closed' });
+  
+  // 在Shadow DOM中创建完全隔离的样式和内容
+  shadowRoot.innerHTML = `
+    <style>
+      :host {
+        all: initial;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999999;
+        pointer-events: none;
+      }
+      
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        pointer-events: all;
+        z-index: 1;
+      }
+      
+      .dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        width: 480px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        z-index: 2;
+        pointer-events: all;
+      }
+      
+      .content-display {
+        max-height: 120px;
+        overflow-y: auto;
+        padding: 8px;
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #333;
+        font-family: inherit;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      
+      h3 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+      }
+      
+      button {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        background: #f0f0f0;
+        color: #333;
+      }
+      
+      button.primary {
+        background: #0066cc;
+        color: white;
+        border: none;
+      }
+      
+      .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+      }
+    </style>
+    
+    <div class="overlay"></div>
+    <div class="dialog">
+      <h3>
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
+        保存到Notion
+      </h3>
+      
+      <div style="margin-bottom: 15px;">
+        <label>选中内容:</label>
+        <div class="content-display">${data.content}</div>
+      </div>
+      
+      <div class="button-group">
+        <button class="cancel-btn">取消</button>
+        <button class="primary save-btn">保存</button>
+      </div>
+    </div>
+  `;
+  
+  // 绑定事件
+  const cancelBtn = shadowRoot.querySelector('.cancel-btn');
+  const saveBtn = shadowRoot.querySelector('.save-btn');
+  const overlay = shadowRoot.querySelector('.overlay');
+  
+  const close = () => document.body.removeChild(shadowHost);
+  
+  cancelBtn.addEventListener('click', close);
+  overlay.addEventListener('click', close);
+  saveBtn.addEventListener('click', () => {
+    // 这里添加保存逻辑
+    console.log('保存内容:', data.content);
+    close();
+  });
+  
+  document.body.appendChild(shadowHost);
+}
+
+// 使用说明：在遇到严重CSS冲突时，可以调用此函数替代原有的showSaveDialog
+// createIsolatedDialog(data);

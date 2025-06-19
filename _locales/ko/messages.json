@@ -312,7 +312,39 @@
       }
     }
   },
+  "configSaveSuccessPage": {
+    "message": "설정이 저장되고 검증되었습니다! 대상 페이지: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccessDatabase": {
+    "message": "설정이 저장되고 검증되었습니다! 대상 데이터베이스: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
   "connectionSuccess": {
+    "message": "연결 성공! 대상 데이터베이스: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessPage": {
+    "message": "연결 성공! 대상 페이지: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessDatabase": {
     "message": "연결 성공! 대상 데이터베이스: $DATABASE$",
     "placeholders": {
       "database": {
@@ -343,5 +375,86 @@
         "content": "$1"
       }
     }
+  },
+  "setupStepMode": {
+    "message": "사용 모드 선택: 페이지 모드(직접 추가) 또는 데이터베이스 모드(페이지 선택 또는 새로 생성)"
+  },
+  "setupStepShare": {
+    "message": "Notion에서 대상 페이지 또는 데이터베이스를 통합과 공유하고 편집 권한 부여"
+  },
+  "setupStepComplete": {
+    "message": "설정 완료! 이제 확장프로그램을 사용할 수 있습니다"
+  },
+  "labelMode": {
+    "message": "사용 모드"
+  },
+  "modePageTitle": {
+    "message": "📄 페이지 모드"
+  },
+  "modePageDesc": {
+    "message": "선택한 페이지에 직접 콘텐츠 추가, 간단한 콘텐츠 수집에 적합"
+  },
+  "modeDatabaseTitle": {
+    "message": "🗄️ 데이터베이스 모드"
+  },
+  "modeDatabaseDesc": {
+    "message": "저장 시 기존 페이지 선택 또는 새로 생성, 구조화된 콘텐츠 관리에 적합"
+  },
+  "labelTargetPage": {
+    "message": "대상 페이지"
+  },
+  "labelTargetDatabase": {
+    "message": "대상 데이터베이스"
+  },
+  "helpTargetPage": {
+    "message": "콘텐츠를 추가할 페이지 선택"
+  },
+  "helpTargetDatabase": {
+    "message": "콘텐츠를 저장할 데이터베이스 선택"
+  },
+  "loadingResources": {
+    "message": "로딩 중..."
+  },
+  "noResourcesFound": {
+    "message": "사용 가능한 리소스를 찾을 수 없습니다"
+  },
+  "loadResourcesFailed": {
+    "message": "로드 실패, API 키를 확인해주세요"
+  },
+  "buttonRefresh": {
+    "message": "새로고침"
+  },
+  "targetPageConfigured": {
+    "message": "대상 페이지 설정됨"
+  },
+  "untitledPage": {
+    "message": "제목 없는 페이지"
+  },
+  "noTagsFound": {
+    "message": "태그 기록 없음"
+  },
+  "saveToTargetPage": {
+    "message": "대상 페이지에 저장:"
+  },
+  "contentWillAppend": {
+    "message": "콘텐츠가 이 페이지 끝에 추가됩니다"
+  },
+  "loadingPageInfo": {
+    "message": "페이지 정보를 불러오는 중..."
+  },
+  "tagsCleared": {
+    "message": "태그 기록이 삭제되었습니다"
+  },
+  "clearFailed": {
+    "message": "삭제 실패"
+  },
+  "clickToDelete": {
+    "message": "클릭하여 삭제"
+  },
+  "tagDeleted": {
+    "message": "태그가 삭제되었습니다"
+  },
+  "deleteFailed": {
+    "message": "삭제 실패"
   }
 } 

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="settingsTitle">Notion文摘收集器 - 设置</title>
+    <title data-i18n="settingsTitle">Phoebe - 设置</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 600px;
+            max-width: 700px;
             margin: 40px auto;
             padding: 20px;
             background: #f5f5f5;
@@ -37,7 +37,7 @@
             color: #333;
         }
         
-        input[type="text"], input[type="password"], textarea {
+        input[type="text"], input[type="password"], select {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
@@ -46,7 +46,7 @@
             box-sizing: border-box;
         }
         
-        input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+        input[type="text"]:focus, input[type="password"]:focus, select:focus {
             outline: none;
             border-color: #0066cc;
             box-shadow: 0 0 0 2px rgba(0,102,204,0.2);
@@ -143,24 +143,98 @@
             margin-bottom: 8px;
             line-height: 1.4;
         }
+        
+        .mode-selection {
+            margin-bottom: 0;
+        }
+        
+        .mode-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .mode-option {
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .mode-option:hover {
+            border-color: #0066cc;
+            box-shadow: 0 2px 4px rgba(0,102,204,0.1);
+        }
+        
+        .mode-option.selected {
+            border-color: #0066cc;
+            background: #f8feff;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.15);
+        }
+        
+        .mode-option input[type="radio"] {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            accent-color: #0066cc;
+        }
+        
+        .mode-info {
+            padding-right: 30px;
+        }
+        
+        .mode-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        .mode-description {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .target-selection {
+            display: none;
+        }
+        
+        .target-selection.show {
+            display: block;
+        }
+        
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .refresh-btn {
+            margin-left: 10px;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><img src="icons/icon48.png" alt="Logo" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 8px;"> <span data-i18n="settingsTitle">Notion文摘收集器 - 设置</span></h1>
+        <h1><img src="icons/icon48.png" alt="Logo" style="width: 32px; height: 32px; vertical-align: middle; margin-right: 8px;"> <span data-i18n="settingsTitle">Phoebe - 设置</span></h1>
         
         <div class="setup-guide">
             <h3>📋 <span data-i18n="setupGuideTitle">设置指南</span></h3>
             <ol>
-                <li data-i18n="setupStep1"></li>
+                <li data-i18n="setupStep1">访问 <a href="https://www.notion.so/my-integrations" target="_blank">Notion集成页面</a> 创建新的集成</li>
                 <li data-i18n="setupStep2">复制生成的API密钥到下方</li>
-                <li data-i18n="setupStep3">在Notion中创建或选择一个页面作为收集目标</li>
-                <li data-i18n="setupStep4">在目标页面点击右上角"共享"，邀请你创建的集成并给予编辑权限</li>
-                <li>
-                    <span data-i18n="setupStep5">复制页面ID到下方（URL中的32位字符串）</span>
-                    <br><small data-i18n="setupStep5Example">例如：https://notion.so/页面标题-32位页面ID 中的 32位页面ID 部分</small>
-                </li>
-                <li data-i18n="setupStep6">保存配置后，插件会将选中内容追加到该页面末尾</li>
+                <li data-i18n="setupStepMode">选择使用模式：普通文档模式（直接追加内容）或数据库模式（可选择页面或创建新页面）</li>
+                <li data-i18n="setupStepShare">在Notion中将目标页面或数据库共享给你的集成，并给予编辑权限</li>
+                <li data-i18n="setupStepComplete">完成设置后即可开始使用！</li>
             </ol>
         </div>
         
@@ -168,16 +242,52 @@
             <div class="form-group">
                 <label for="notionToken" data-i18n="labelApiToken">Notion API 密钥 *</label>
                 <input type="password" id="notionToken" required>
-                <div class="help-text" data-i18n="helpApiToken"></div>
+                <div class="help-text" data-i18n="helpApiToken">从 <a href="https://www.notion.so/my-integrations" target="_blank">Notion集成页面</a> 获取API密钥</div>
             </div>
             
             <div class="form-group">
-                <label for="databaseId" data-i18n="labelDatabaseId">Database ID *</label>
-                <input type="text" id="databaseId" required>
-                <div class="help-text" data-i18n="helpDatabaseId"></div>
+                <label data-i18n="labelMode">使用模式 *</label>
+                <div class="mode-selection">
+                    <div class="mode-options">
+                        <div class="mode-option" data-mode="page">
+                            <input type="radio" name="mode" value="page" id="pageMode">
+                            <div class="mode-info">
+                                <div class="mode-title" data-i18n="modePageTitle">📄 普通文档模式</div>
+                                <div class="mode-description" data-i18n="modePageDesc">内容直接追加到选定的页面末尾，适合简单的内容收集</div>
+                            </div>
+                        </div>
+                        <div class="mode-option" data-mode="database">
+                            <input type="radio" name="mode" value="database" id="databaseMode">
+                            <div class="mode-info">
+                                <div class="mode-title" data-i18n="modeDatabaseTitle">🗄️ 数据库模式</div>
+                                <div class="mode-description" data-i18n="modeDatabaseDesc">保存时可选择现有页面或创建新页面，适合结构化的内容管理</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-
+            <div id="pageSelection" class="form-group target-selection">
+                <label for="targetPage" data-i18n="labelTargetPage">目标页面 *</label>
+                <div style="display: flex; align-items: center;">
+                    <select id="targetPage" disabled>
+                        <option value="" data-i18n="loadingPages">请先输入API密钥</option>
+                    </select>
+                    <button type="button" id="refreshPages" class="btn-secondary refresh-btn" data-i18n="buttonRefresh" disabled></button>
+                </div>
+                <div class="help-text" data-i18n="helpTargetPage">选择要追加内容的页面</div>
+            </div>
+            
+            <div id="databaseSelection" class="form-group target-selection">
+                <label for="targetDatabase" data-i18n="labelTargetDatabase">目标数据库 *</label>
+                <div style="display: flex; align-items: center;">
+                    <select id="targetDatabase" disabled>
+                        <option value="" data-i18n="loadingPages">请先输入API密钥</option>
+                    </select>
+                    <button type="button" id="refreshDatabases" class="btn-secondary refresh-btn" data-i18n="buttonRefresh" disabled></button>
+                </div>
+                <div class="help-text" data-i18n="helpTargetDatabase">选择要保存内容的数据库</div>
+            </div>
             
             <div class="button-group">
                 <button type="submit" class="btn-primary" data-i18n="buttonSaveSettings">💾 保存设置</button>
