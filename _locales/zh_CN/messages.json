@@ -320,7 +320,39 @@
       }
     }
   },
+  "configSaveSuccessPage": {
+    "message": "配置已保存并验证！目标页面: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccessDatabase": {
+    "message": "配置已保存并验证！目标数据库: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
   "connectionSuccess": {
+    "message": "连接成功！目标数据库: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessPage": {
+    "message": "连接成功！目标页面: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessDatabase": {
     "message": "连接成功！目标数据库: $DATABASE$",
     "placeholders": {
       "database": {

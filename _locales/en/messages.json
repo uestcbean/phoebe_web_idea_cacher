@@ -320,7 +320,39 @@
       }
     }
   },
+  "configSaveSuccessPage": {
+    "message": "Configuration saved and verified! Target page: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccessDatabase": {
+    "message": "Configuration saved and verified! Target database: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
   "connectionSuccess": {
+    "message": "Connection successful! Target database: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessPage": {
+    "message": "Connection successful! Target page: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessDatabase": {
     "message": "Connection successful! Target database: $DATABASE$",
     "placeholders": {
       "database": {

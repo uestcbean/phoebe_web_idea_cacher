@@ -312,7 +312,39 @@
       }
     }
   },
+  "configSaveSuccessPage": {
+    "message": "Konfiguration gespeichert und verifiziert! Zielseite: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccessDatabase": {
+    "message": "Konfiguration gespeichert und verifiziert! Zieldatenbank: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
   "connectionSuccess": {
+    "message": "Verbindung erfolgreich! Zieldatenbank: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessPage": {
+    "message": "Verbindung erfolgreich! Zielseite: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessDatabase": {
     "message": "Verbindung erfolgreich! Zieldatenbank: $DATABASE$",
     "placeholders": {
       "database": {

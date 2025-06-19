@@ -452,8 +452,10 @@ async function saveSettings(event) {
         // 保存到Chrome存储
         await chrome.storage.sync.set(config);
         
-        const successMsg = getI18nMessage('configSaveSuccess');
-        showStatus(`✅ ${successMsg.replace('$DATABASE$', targetTitle || targetId)}`, 'success');
+        const successMsgKey = mode === 'page' ? 'configSaveSuccessPage' : 'configSaveSuccessDatabase';
+        const successMsg = getI18nMessage(successMsgKey);
+        const placeholder = mode === 'page' ? '$PAGE$' : '$DATABASE$';
+        showStatus(`✅ ${successMsg.replace(placeholder, targetTitle || targetId)}`, 'success');
     } catch (error) {
         const saveFailedMsg = getI18nMessage('saveFailed');
         showStatus(`❌ ${saveFailedMsg.replace('$ERROR$', error.message)}`, 'error');
@@ -532,8 +534,10 @@ async function testConnection() {
                 title = data.title?.[0]?.plain_text || getI18nMessage('untitledDatabase');
             }
             
-            const successMsg = getI18nMessage('connectionSuccess');
-            showStatus(`✅ ${successMsg.replace('$DATABASE$', title)}`, 'success');
+            const successMsgKey = mode === 'page' ? 'connectionSuccessPage' : 'connectionSuccessDatabase';
+            const successMsg = getI18nMessage(successMsgKey);
+            const placeholder = mode === 'page' ? '$PAGE$' : '$DATABASE$';
+            showStatus(`✅ ${successMsg.replace(placeholder, title)}`, 'success');
         } else {
             const errorData = await response.json();
             const failedMsg = getI18nMessage('connectionFailed');
@@ -622,12 +626,12 @@ function displayTags(tags) {
             background: #e7f3ff;
             color: #0066cc;
             padding: 4px 12px;
-            border-radius: 12px;
+                    border-radius: 12px;
             margin: 2px;
             font-size: 12px;
             border: 1px solid #b3d9ff;
             position: relative;
-            cursor: pointer;
+                        cursor: pointer;
         " onclick="removeTag('${tag.replace(/'/g, '\\\'')}')" title="${getI18nMessage('clickToDelete') || 'Click to delete'}">
             ${tag} ×
         </span>`

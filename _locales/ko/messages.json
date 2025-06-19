@@ -312,7 +312,39 @@
       }
     }
   },
+  "configSaveSuccessPage": {
+    "message": "설정이 저장되고 검증되었습니다! 대상 페이지: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccessDatabase": {
+    "message": "설정이 저장되고 검증되었습니다! 대상 데이터베이스: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
   "connectionSuccess": {
+    "message": "연결 성공! 대상 데이터베이스: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessPage": {
+    "message": "연결 성공! 대상 페이지: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessDatabase": {
     "message": "연결 성공! 대상 데이터베이스: $DATABASE$",
     "placeholders": {
       "database": {

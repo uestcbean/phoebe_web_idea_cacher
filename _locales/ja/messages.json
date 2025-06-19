@@ -312,7 +312,39 @@
       }
     }
   },
+  "configSaveSuccessPage": {
+    "message": "設定が保存され検証されました！対象ページ: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "configSaveSuccessDatabase": {
+    "message": "設定が保存され検証されました！対象データベース: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
   "connectionSuccess": {
+    "message": "接続成功！対象データベース: $DATABASE$",
+    "placeholders": {
+      "database": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessPage": {
+    "message": "接続成功！対象ページ: $PAGE$",
+    "placeholders": {
+      "page": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionSuccessDatabase": {
     "message": "接続成功！対象データベース: $DATABASE$",
     "placeholders": {
       "database": {

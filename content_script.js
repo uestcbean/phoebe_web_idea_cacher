@@ -57,7 +57,10 @@ async function showSaveDialog(data) {
     
     pageSelectionHtml = `
       <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('saveToTargetPage', '保存到目标页面:')}</label>
+        <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-weight: 500;">
+          <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 16px; height: 16px;" alt="Phoebe">
+          ${getI18nText('saveToTargetPage', '保存到目标页面:')}
+        </label>
         <div id="target-page-info" style="
           padding: 8px 12px;
           background: #f0f8ff;
@@ -76,7 +79,10 @@ async function showSaveDialog(data) {
     // 数据库模式：提供页面选择和新建选项
     pageSelectionHtml = `
       <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('selectPage', '选择页面:')}</label>
+        <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-weight: 500;">
+          <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 16px; height: 16px;" alt="Phoebe">
+          ${getI18nText('selectPage', '选择页面:')}
+        </label>
         <div style="display: flex; gap: 8px; align-items: center;">
           <select id="notion-page-select" style="
             flex: 1;
