@@ -57,10 +57,7 @@ async function showSaveDialog(data) {
     
     pageSelectionHtml = `
       <div style="margin-bottom: 15px;">
-        <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-weight: 500;">
-          <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 16px; height: 16px;" alt="Phoebe">
-          ${getI18nText('saveToTargetPage', '保存到目标页面:')}
-        </label>
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveToTargetPage', '保存到目标页面:')}</label>
         <div id="target-page-info" style="
           padding: 8px 12px;
           background: #f0f8ff;
@@ -79,10 +76,7 @@ async function showSaveDialog(data) {
     // 数据库模式：提供页面选择和新建选项
     pageSelectionHtml = `
       <div style="margin-bottom: 15px;">
-        <label style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-weight: 500;">
-          <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 16px; height: 16px;" alt="Phoebe">
-          ${getI18nText('selectPage', '选择页面:')}
-        </label>
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('selectPage', '选择页面:')}</label>
         <div style="display: flex; gap: 8px; align-items: center;">
           <select id="notion-page-select" style="
             flex: 1;
@@ -122,13 +116,16 @@ async function showSaveDialog(data) {
       width: 480px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     ">
-      <h3 style="margin: 0 0 15px 0; color: #333;">${getI18nText('saveDialogTitle', '保存到Notion')}</h3>
+      <h3 style="margin: 0 0 15px 0; color: #333 !important; display: flex; align-items: center; gap: 8px; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important; font-weight: 600 !important; font-size: 18px !important;">
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
+        ${getI18nText('saveDialogTitle', '保存到Notion')}
+      </h3>
       
       ${pageSelectionHtml}
       
       <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('saveDialogContent', '选中内容:')}</label>
-        <div style="
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveDialogContent', '选中内容:')}</label>
+        <div id="selected-content-display" style="
           max-height: 120px;
           overflow-y: auto;
           padding: 8px;
@@ -136,11 +133,38 @@ async function showSaveDialog(data) {
           border-radius: 4px;
           font-size: 14px;
           line-height: 1.4;
-        ">${data.content}</div>
+          color: #333 !important;
+          text-decoration: none !important;
+          /* 强制重置所有可能影响文本显示的CSS属性 */
+          font-weight: normal !important;
+          font-style: normal !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          word-spacing: normal !important;
+          text-shadow: none !important;
+          background-color: #f5f5f5 !important;
+          border: 1px solid #e0e0e0 !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+          /* 防止链接样式影响 */
+          cursor: default !important;
+          /* 防止被页面的全局选择器影响 */
+          all: revert !important;
+          /* 然后重新设置我们需要的样式 */
+          max-height: 120px !important;
+          overflow-y: auto !important;
+          padding: 8px !important;
+          background: #f5f5f5 !important;
+          border-radius: 4px !important;
+          font-size: 14px !important;
+          line-height: 1.4 !important;
+          color: #333 !important;
+          text-decoration: none !important;
+          display: block !important;
+        "></div>
       </div>
       
       <div style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('saveDialogNote', '备注 (可选):')}</label>
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveDialogNote', '备注 (可选):')}</label>
         <textarea id="notion-note" placeholder="${getI18nText('saveDialogNotePlaceholder', '添加备注...')}" style="
           width: 100%;
           height: 60px;
@@ -154,7 +178,7 @@ async function showSaveDialog(data) {
       </div>
       
       <div style="margin-bottom: 20px;">
-        <label style="display: block; margin-bottom: 5px; font-weight: 500;">${getI18nText('saveDialogTags', '标签 (可选):')}</label>
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveDialogTags', '标签 (可选):')}</label>
         <div id="notion-tags-container" style="
           border: 1px solid #ddd;
           border-radius: 4px;
@@ -220,6 +244,96 @@ async function showSaveDialog(data) {
   `;
   
   document.body.appendChild(dialog);
+  
+  // 强制修复所有可能被页面CSS影响的元素样式
+  setTimeout(() => {
+    const allLabels = dialog.querySelectorAll('label');
+    allLabels.forEach(label => {
+      // 强制重置label样式，防止被页面CSS覆盖
+      label.style.setProperty('color', '#333', 'important');
+      label.style.setProperty('text-decoration', 'none', 'important');
+      label.style.setProperty('font-family', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', 'important');
+      label.style.setProperty('font-style', 'normal', 'important');
+      label.style.setProperty('text-transform', 'none', 'important');
+      label.style.setProperty('letter-spacing', 'normal', 'important');
+      label.style.setProperty('text-shadow', 'none', 'important');
+      label.style.setProperty('cursor', 'default', 'important');
+      label.style.setProperty('font-weight', '500', 'important');
+      label.style.setProperty('font-size', '14px', 'important');
+    });
+    
+    // 也修复其他可能的文本元素
+    const allTextElements = dialog.querySelectorAll('h3, div, span, p');
+    allTextElements.forEach(element => {
+      if (element.id !== 'selected-content-display') { // 排除已经处理过的内容显示区域
+        element.style.setProperty('color', '#333', 'important');
+        element.style.setProperty('text-decoration', 'none', 'important');
+        element.style.setProperty('font-family', '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', 'important');
+      }
+    });
+    
+    console.log('🛡️ [强制样式修复] 已应用JavaScript样式保护');
+  }, 10);
+  
+  // 安全地设置选中内容（避免HTML注入和样式继承问题）
+  const contentDisplay = document.getElementById('selected-content-display');
+  if (contentDisplay) {
+    contentDisplay.textContent = data.content; // 使用textContent而不是innerHTML
+    
+    // 调试：检查可能影响文本颜色的CSS规则
+    console.log('🎨 [CSS调试] 检查选中内容显示区域的样式:');
+    const computedStyle = window.getComputedStyle(contentDisplay);
+    console.log('  - 实际颜色:', computedStyle.color);
+    console.log('  - 实际背景:', computedStyle.backgroundColor);
+    console.log('  - 实际字体:', computedStyle.fontFamily);
+    console.log('  - 文本装饰:', computedStyle.textDecoration);
+    console.log('  - 字体粗细:', computedStyle.fontWeight);
+    
+    // 检查页面是否有可能影响插件的全局CSS规则
+    const stylesheets = document.styleSheets;
+    let problematicRules = [];
+    
+    try {
+      for (let i = 0; i < stylesheets.length; i++) {
+        const sheet = stylesheets[i];
+        try {
+          const rules = sheet.cssRules || sheet.rules;
+          for (let j = 0; j < rules.length; j++) {
+            const rule = rules[j];
+            if (rule.selectorText) {
+              // 检查可能影响插件的选择器
+              if (rule.selectorText.includes('*') || 
+                  rule.selectorText.includes('div') ||
+                  rule.selectorText.includes(':visited') ||
+                  rule.selectorText.includes('a') ||
+                  rule.cssText.includes('color:') && rule.cssText.includes('purple')) {
+                problematicRules.push({
+                  selector: rule.selectorText,
+                  cssText: rule.cssText,
+                  href: sheet.href
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.log('  - 无法访问样式表:', sheet.href, e.message);
+        }
+      }
+      
+      if (problematicRules.length > 0) {
+        console.log('🚨 [CSS调试] 发现可能影响插件的CSS规则:');
+        problematicRules.forEach((rule, index) => {
+          console.log(`  ${index + 1}. 选择器: ${rule.selector}`);
+          console.log(`     规则: ${rule.cssText}`);
+          console.log(`     来源: ${rule.href || '内联样式'}`);
+        });
+      } else {
+        console.log('✅ [CSS调试] 未发现明显的问题CSS规则');
+      }
+    } catch (e) {
+      console.log('❌ [CSS调试] 无法完整检查样式表:', e.message);
+    }
+  }
   
   // 初始化标签管理（总是需要）
   initTagManagement();
@@ -1059,3 +1173,158 @@ function closeDialog() {
     document.body.removeChild(dialog);
   }
 }
+
+// 终极CSS隔离方案：使用Shadow DOM（备选方案）
+function createIsolatedDialog(data) {
+  // 创建宿主元素
+  const shadowHost = document.createElement('div');
+  shadowHost.style.cssText = `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 999999 !important;
+    pointer-events: none !important;
+  `;
+  
+  // 创建Shadow DOM
+  const shadowRoot = shadowHost.attachShadow({ mode: 'closed' });
+  
+  // 在Shadow DOM中创建完全隔离的样式和内容
+  shadowRoot.innerHTML = `
+    <style>
+      :host {
+        all: initial;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999999;
+        pointer-events: none;
+      }
+      
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        pointer-events: all;
+        z-index: 1;
+      }
+      
+      .dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        width: 480px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        z-index: 2;
+        pointer-events: all;
+      }
+      
+      .content-display {
+        max-height: 120px;
+        overflow-y: auto;
+        padding: 8px;
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #333;
+        font-family: inherit;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      
+      h3 {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+      }
+      
+      button {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        background: #f0f0f0;
+        color: #333;
+      }
+      
+      button.primary {
+        background: #0066cc;
+        color: white;
+        border: none;
+      }
+      
+      .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+      }
+    </style>
+    
+    <div class="overlay"></div>
+    <div class="dialog">
+      <h3>
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
+        保存到Notion
+      </h3>
+      
+      <div style="margin-bottom: 15px;">
+        <label>选中内容:</label>
+        <div class="content-display">${data.content}</div>
+      </div>
+      
+      <div class="button-group">
+        <button class="cancel-btn">取消</button>
+        <button class="primary save-btn">保存</button>
+      </div>
+    </div>
+  `;
+  
+  // 绑定事件
+  const cancelBtn = shadowRoot.querySelector('.cancel-btn');
+  const saveBtn = shadowRoot.querySelector('.save-btn');
+  const overlay = shadowRoot.querySelector('.overlay');
+  
+  const close = () => document.body.removeChild(shadowHost);
+  
+  cancelBtn.addEventListener('click', close);
+  overlay.addEventListener('click', close);
+  saveBtn.addEventListener('click', () => {
+    // 这里添加保存逻辑
+    console.log('保存内容:', data.content);
+    close();
+  });
+  
+  document.body.appendChild(shadowHost);
+}
+
+// 使用说明：在遇到严重CSS冲突时，可以调用此函数替代原有的showSaveDialog
+// createIsolatedDialog(data);

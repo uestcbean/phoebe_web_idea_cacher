@@ -222,12 +222,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       pleaseSelectPage: chrome.i18n.getMessage('pleaseSelectPage') || '请选择一个页面',
       pleaseFillApiAndDatabase: chrome.i18n.getMessage('pleaseFillApiAndDatabase') || '请填写API密钥和Database ID',
       configVerifyFailed: chrome.i18n.getMessage('configVerifyFailed') || '配置验证失败: $ERROR$',
-      configSaveSuccess: chrome.i18n.getMessage('configSaveSuccess') || '配置已保存并验证！目标数据库: $DATABASE$',
-      configSaveSuccessPage: chrome.i18n.getMessage('configSaveSuccessPage') || '配置已保存并验证！目标页面: $PAGE$',
-      configSaveSuccessDatabase: chrome.i18n.getMessage('configSaveSuccessDatabase') || '配置已保存并验证！目标数据库: $DATABASE$',
-      connectionSuccess: chrome.i18n.getMessage('connectionSuccess') || '连接成功！目标数据库: $DATABASE$',
-      connectionSuccessPage: chrome.i18n.getMessage('connectionSuccessPage') || '连接成功！目标页面: $PAGE$',
-      connectionSuccessDatabase: chrome.i18n.getMessage('connectionSuccessDatabase') || '连接成功！目标数据库: $DATABASE$',
+      configSaveSuccess: chrome.i18n.getMessage('configSaveSuccess') || '配置已保存并验证！',
+      configSaveSuccessPage: chrome.i18n.getMessage('configSaveSuccessPage') || '配置已保存并验证！',
+      configSaveSuccessDatabase: chrome.i18n.getMessage('configSaveSuccessDatabase') || '配置已保存并验证！',
+      connectionSuccess: chrome.i18n.getMessage('connectionSuccess') || '连接成功！',
+      connectionSuccessPage: chrome.i18n.getMessage('connectionSuccessPage') || '连接成功！',
+      connectionSuccessDatabase: chrome.i18n.getMessage('connectionSuccessDatabase') || '连接成功！',
       connectionFailed: chrome.i18n.getMessage('connectionFailed') || '连接失败: $ERROR$',
       connectionError: chrome.i18n.getMessage('connectionError') || '连接错误: $ERROR$',
       targetDatabase: chrome.i18n.getMessage('targetDatabase') || '目标数据库: $TITLE$',
@@ -779,27 +779,57 @@ async function getAccessibleDatabases(apiToken) {
 // 获取资源标题的通用函数
 function getResourceTitle(resource) {
   try {
+    console.log('获取资源标题:', resource.object, resource.id);
+    
     if (resource.object === 'page') {
-      // 页面标题
-      if (resource.properties && resource.properties.title && resource.properties.title.title) {
-        const titleArray = resource.properties.title.title;
-        if (titleArray.length > 0) {
-          const title = titleArray[0].text.content || '';
-          return title.trim() || null; // 返回null表示无效标题
+      // 页面标题 - 尝试多种可能的结构
+      if (resource.properties) {
+        // 查找title类型的属性
+        for (const [key, value] of Object.entries(resource.properties)) {
+          if (value.type === 'title') {
+            console.log('找到页面title属性:', key, value);
+            // 尝试多种可能的结构
+            if (value.title && value.title.length > 0) {
+              // 结构1: value.title[0].plain_text
+              if (value.title[0].plain_text) {
+                const title = value.title[0].plain_text.trim();
+                console.log('使用plain_text:', title);
+                return title || null;
+              }
+              // 结构2: value.title[0].text.content
+              if (value.title[0].text && value.title[0].text.content) {
+                const title = value.title[0].text.content.trim();
+                console.log('使用text.content:', title);
+                return title || null;
+              }
+            }
+          }
         }
       }
+      console.log('页面无标题或标题为空');
       return null; // 无标题页面
     } else if (resource.object === 'database') {
       // 数据库标题
+      console.log('数据库title结构:', resource.title);
       if (resource.title && resource.title.length > 0) {
-        const title = resource.title[0].text.content || '';
-        return title.trim() || null; // 返回null表示无效标题
+        // 尝试多种可能的结构
+        if (resource.title[0].plain_text) {
+          const title = resource.title[0].plain_text.trim();
+          console.log('数据库使用plain_text:', title);
+          return title || null;
+        }
+        if (resource.title[0].text && resource.title[0].text.content) {
+          const title = resource.title[0].text.content.trim();
+          console.log('数据库使用text.content:', title);
+          return title || null;
+        }
       }
+      console.log('数据库无标题或标题为空');
       return null; // 无标题数据库
     }
     return null; // 未知资源
   } catch (error) {
-    console.error('获取资源标题失败:', error);
+    console.error('获取资源标题失败:', error, resource);
     return null; // 出错时返回null
   }
 }

@@ -222,9 +222,13 @@ async function refreshPages() {
             apiToken: apiToken
         });
         
+        console.log('📄 [刷新页面] API响应:', response);
+        
         if (response && response.success) {
+            console.log('  - 成功获取页面列表，数量:', response.pages?.length || 0);
             populateSelect(targetPageSelect, response.pages, getI18nMessage('labelTargetPage'));
         } else {
+            console.log('  - 获取页面列表失败:', response?.error);
             resetSelect(targetPageSelect, getI18nMessage('loadResourcesFailed'));
             showStatus(response.error || getI18nMessage('loadResourcesFailed'), 'error');
         }
@@ -259,9 +263,13 @@ async function refreshDatabases() {
             apiToken: apiToken
         });
         
+        console.log('🗄️ [刷新数据库] API响应:', response);
+        
         if (response && response.success) {
+            console.log('  - 成功获取数据库列表，数量:', response.databases?.length || 0);
             populateSelect(targetDatabaseSelect, response.databases, getI18nMessage('labelTargetDatabase'));
         } else {
+            console.log('  - 获取数据库列表失败:', response?.error);
             resetSelect(targetDatabaseSelect, getI18nMessage('loadResourcesFailed'));
             showStatus(response.error || getI18nMessage('loadResourcesFailed'), 'error');
         }
@@ -276,6 +284,11 @@ async function refreshDatabases() {
 
 // 填充选择框
 function populateSelect(selectElement, items, placeholder) {
+    console.log('📋 [填充选择框] 开始填充:', selectElement.id);
+    console.log('  - items数量:', items?.length || 0);
+    console.log('  - items详情:', items);
+    console.log('  - placeholder:', placeholder);
+    
     // 清空现有选项
     selectElement.innerHTML = '';
     
@@ -288,13 +301,21 @@ function populateSelect(selectElement, items, placeholder) {
     selectElement.appendChild(defaultOption);
     
     if (items && items.length > 0) {
-        items.forEach(item => {
+        items.forEach((item, index) => {
+            console.log(`  - 添加选项 ${index}:`, {
+                id: item.id,
+                title: item.title,
+                url: item.url
+            });
+            
             const option = document.createElement('option');
             option.value = item.id;
             option.textContent = item.title;
             selectElement.appendChild(option);
         });
         selectElement.disabled = false;
+        
+        console.log('  - 选择框填充完成，总选项数:', selectElement.options.length);
         
         // 尝试恢复之前保存的选择
         restoreSavedSelection(selectElement);
@@ -306,6 +327,8 @@ function populateSelect(selectElement, items, placeholder) {
         noItemsOption.disabled = true;
         selectElement.appendChild(noItemsOption);
         selectElement.disabled = true;
+        
+        console.log('  - 没有可用项目，已添加未找到资源选项');
     }
 }
 
@@ -407,10 +430,25 @@ async function saveSettings(event) {
     let targetId = null;
     let targetTitle = null;
     
+    console.log('🔧 [保存设置] 开始保存，模式:', mode);
+    
     if (mode === 'page') {
         const targetPageSelect = document.getElementById('targetPage');
         targetId = targetPageSelect.value;
-        targetTitle = targetPageSelect.options[targetPageSelect.selectedIndex]?.text;
+        const selectedIndex = targetPageSelect.selectedIndex;
+        const selectedOption = targetPageSelect.options[selectedIndex];
+        targetTitle = selectedOption?.text;
+        
+        console.log('📄 [页面模式] 选择框状态:');
+        console.log('  - selectedIndex:', selectedIndex);
+        console.log('  - targetId:', targetId);
+        console.log('  - selectedOption:', selectedOption);
+        console.log('  - targetTitle:', targetTitle);
+        console.log('  - 所有选项:', Array.from(targetPageSelect.options).map(opt => ({
+            value: opt.value,
+            text: opt.text,
+            disabled: opt.disabled
+        })));
         
         if (!targetId) {
             showStatus(getI18nMessage('labelTargetPage'), 'error');
@@ -419,7 +457,20 @@ async function saveSettings(event) {
     } else if (mode === 'database') {
         const targetDatabaseSelect = document.getElementById('targetDatabase');
         targetId = targetDatabaseSelect.value;
-        targetTitle = targetDatabaseSelect.options[targetDatabaseSelect.selectedIndex]?.text;
+        const selectedIndex = targetDatabaseSelect.selectedIndex;
+        const selectedOption = targetDatabaseSelect.options[selectedIndex];
+        targetTitle = selectedOption?.text;
+        
+        console.log('🗄️ [数据库模式] 选择框状态:');
+        console.log('  - selectedIndex:', selectedIndex);
+        console.log('  - targetId:', targetId);
+        console.log('  - selectedOption:', selectedOption);
+        console.log('  - targetTitle:', targetTitle);
+        console.log('  - 所有选项:', Array.from(targetDatabaseSelect.options).map(opt => ({
+            value: opt.value,
+            text: opt.text,
+            disabled: opt.disabled
+        })));
         
         if (!targetId) {
             showStatus(getI18nMessage('labelTargetDatabase'), 'error');
@@ -453,9 +504,18 @@ async function saveSettings(event) {
         await chrome.storage.sync.set(config);
         
         const successMsgKey = mode === 'page' ? 'configSaveSuccessPage' : 'configSaveSuccessDatabase';
-        const successMsg = getI18nMessage(successMsgKey);
-        const placeholder = mode === 'page' ? '$PAGE$' : '$DATABASE$';
-        showStatus(`✅ ${successMsg.replace(placeholder, targetTitle || targetId)}`, 'success');
+        // 使用Chrome标准的国际化参数传递方式
+        const successMsg = chrome.i18n.getMessage(successMsgKey, [targetTitle || targetId]);
+        
+        console.log('✅ [保存成功] 准备显示成功消息:');
+        console.log('  - successMsgKey:', successMsgKey);
+        console.log('  - 传递的参数:', [targetTitle || targetId]);
+        console.log('  - 获取的消息:', successMsg);
+        
+        const finalMessage = `✅ ${successMsg}`;
+        console.log('  - 最终消息:', finalMessage);
+        
+        showStatus(finalMessage, 'success');
     } catch (error) {
         const saveFailedMsg = getI18nMessage('saveFailed');
         showStatus(`❌ ${saveFailedMsg.replace('$ERROR$', error.message)}`, 'error');
@@ -534,10 +594,23 @@ async function testConnection() {
                 title = data.title?.[0]?.plain_text || getI18nMessage('untitledDatabase');
             }
             
+            console.log('🔗 [测试连接成功] 从API获取的标题信息:');
+            console.log('  - mode:', mode);
+            console.log('  - API响应数据:', data);
+            console.log('  - 解析出的title:', title);
+            
             const successMsgKey = mode === 'page' ? 'connectionSuccessPage' : 'connectionSuccessDatabase';
-            const successMsg = getI18nMessage(successMsgKey);
-            const placeholder = mode === 'page' ? '$PAGE$' : '$DATABASE$';
-            showStatus(`✅ ${successMsg.replace(placeholder, title)}`, 'success');
+            // 使用Chrome标准的国际化参数传递方式
+            const successMsg = chrome.i18n.getMessage(successMsgKey, [title]);
+            
+            console.log('  - successMsgKey:', successMsgKey);
+            console.log('  - 传递的参数:', [title]);
+            console.log('  - 获取的消息:', successMsg);
+            
+            const finalMessage = `✅ ${successMsg}`;
+            console.log('  - 最终测试成功消息:', finalMessage);
+            
+            showStatus(finalMessage, 'success');
         } else {
             const errorData = await response.json();
             const failedMsg = getI18nMessage('connectionFailed');
