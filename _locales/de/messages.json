@@ -343,5 +343,86 @@
         "content": "$1"
       }
     }
+  },
+  "setupStepMode": {
+    "message": "Nutzungsmodus wählen: Seitenmodus (direkt anhängen) oder Datenbankmodus (Seiten auswählen oder erstellen)"
+  },
+  "setupStepShare": {
+    "message": "Teilen Sie Ihre Zielseite oder Datenbank mit Ihrer Integration und gewähren Sie Bearbeitungsrechte"
+  },
+  "setupStepComplete": {
+    "message": "Einrichtung abgeschlossen! Sie können die Erweiterung nun verwenden"
+  },
+  "labelMode": {
+    "message": "Nutzungsmodus"
+  },
+  "modePageTitle": {
+    "message": "📄 Seitenmodus"
+  },
+  "modePageDesc": {
+    "message": "Inhalte werden direkt an die ausgewählte Seite angehängt, geeignet für einfache Inhaltssammlung"
+  },
+  "modeDatabaseTitle": {
+    "message": "🗄️ Datenbankmodus"
+  },
+  "modeDatabaseDesc": {
+    "message": "Beim Speichern vorhandene Seiten auswählen oder neue erstellen, geeignet für strukturiertes Content-Management"
+  },
+  "labelTargetPage": {
+    "message": "Zielseite"
+  },
+  "labelTargetDatabase": {
+    "message": "Zieldatenbank"
+  },
+  "helpTargetPage": {
+    "message": "Seite auswählen, an die Inhalte angehängt werden sollen"
+  },
+  "helpTargetDatabase": {
+    "message": "Datenbank auswählen, in der Inhalte gespeichert werden sollen"
+  },
+  "loadingResources": {
+    "message": "Laden..."
+  },
+  "noResourcesFound": {
+    "message": "Keine verfügbaren Ressourcen gefunden"
+  },
+  "loadResourcesFailed": {
+    "message": "Laden fehlgeschlagen, bitte überprüfen Sie Ihren API-Schlüssel"
+  },
+  "buttonRefresh": {
+    "message": "Aktualisieren"
+  },
+  "targetPageConfigured": {
+    "message": "Zielseite konfiguriert"
+  },
+  "untitledPage": {
+    "message": "Unbenannte Seite"
+  },
+  "noTagsFound": {
+    "message": "Keine Tag-Historie"
+  },
+  "saveToTargetPage": {
+    "message": "Auf Zielseite speichern:"
+  },
+  "contentWillAppend": {
+    "message": "Inhalt wird am Ende dieser Seite hinzugefügt"
+  },
+  "loadingPageInfo": {
+    "message": "Seiteninformationen werden geladen..."
+  },
+  "tagsCleared": {
+    "message": "Tag-Verlauf gelöscht"
+  },
+  "clearFailed": {
+    "message": "Löschen fehlgeschlagen"
+  },
+  "clickToDelete": {
+    "message": "Klicken zum Löschen"
+  },
+  "tagDeleted": {
+    "message": "Tag gelöscht"
+  },
+  "deleteFailed": {
+    "message": "Löschen fehlgeschlagen"
   }
 } 

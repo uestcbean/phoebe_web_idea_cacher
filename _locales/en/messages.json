@@ -351,5 +351,86 @@
         "content": "$1"
       }
     }
+  },
+  "setupStepMode": {
+    "message": "Choose usage mode: Page mode (direct append) or Database mode (select or create pages)"
+  },
+  "setupStepShare": {
+    "message": "Share your target page or database with your integration and grant edit permissions"
+  },
+  "setupStepComplete": {
+    "message": "Setup complete! You can now start using the extension"
+  },
+  "labelMode": {
+    "message": "Usage Mode"
+  },
+  "modePageTitle": {
+    "message": "📄 Page Mode"
+  },
+  "modePageDesc": {
+    "message": "Content is appended directly to the selected page, suitable for simple content collection"
+  },
+  "modeDatabaseTitle": {
+    "message": "🗄️ Database Mode"
+  },
+  "modeDatabaseDesc": {
+    "message": "Choose existing pages or create new ones when saving, suitable for structured content management"
+  },
+  "labelTargetPage": {
+    "message": "Target Page"
+  },
+  "labelTargetDatabase": {
+    "message": "Target Database"
+  },
+  "helpTargetPage": {
+    "message": "Select the page to append content to"
+  },
+  "helpTargetDatabase": {
+    "message": "Select the database to save content to"
+  },
+  "loadingResources": {
+    "message": "Loading..."
+  },
+  "noResourcesFound": {
+    "message": "No available resources found"
+  },
+  "loadResourcesFailed": {
+    "message": "Failed to load, please check your API key"
+  },
+  "buttonRefresh": {
+    "message": "Refresh"
+  },
+  "targetPageConfigured": {
+    "message": "Target page configured"
+  },
+  "untitledPage": {
+    "message": "Untitled page"
+  },
+  "noTagsFound": {
+    "message": "No tag history"
+  },
+  "saveToTargetPage": {
+    "message": "Save to target page:"
+  },
+  "contentWillAppend": {
+    "message": "Content will be appended to the end of this page"
+  },
+  "loadingPageInfo": {
+    "message": "Loading page information..."
+  },
+  "tagsCleared": {
+    "message": "Tag history cleared"
+  },
+  "clearFailed": {
+    "message": "Clear failed"
+  },
+  "clickToDelete": {
+    "message": "Click to delete"
+  },
+  "tagDeleted": {
+    "message": "Tag deleted"
+  },
+  "deleteFailed": {
+    "message": "Delete failed"
   }
 } 
