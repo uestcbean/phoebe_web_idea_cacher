@@ -1,5 +1,7 @@
 # ![Logo](../icons/icon48.png) Phoebe - Versionsgeschichte
 
+*Andere Sprachversionen: [中文](CHANGELOG.md) | [English](CHANGELOG_en.md) | [日本語](CHANGELOG_ja.md) | [한국어](CHANGELOG_ko.md)*
+
 ## 📋 Änderungsprotokoll
 
 Alle bemerkenswerten Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
@@ -9,7 +11,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [1.0.3] - 2024-12-21 🎉
+## [1.0.3] 🎉
 
 ### Hinzugefügt (Added)
 - ⚡ **Vollständige Neukonstruktion der Schnellnotizen-Funktion**: Vervollständigung der Konfigurationsabruf-Logik, Behebung des Problems mit der Anzeige von Zielseitennamen
@@ -34,7 +36,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [1.0.2] - 2024-11-15
+## [1.0.2]
 
 ### Hinzugefügt (Added)
 - 🎯 **Intelligente Modusauswahl**: Dualer Modus-Support für normalen Dokumentenmodus und Datenbankmodus
@@ -58,7 +60,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [1.0.1] - 2024-10-20
+## [1.0.1]
 
 ### Hinzugefügt (Added)
 - 🗃️ **Datenbankmodus-Unterstützung**: Notion-Datenbank-API-Unterstützung, Ersetzung einfacher Seitenverbindungen
@@ -79,7 +81,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [1.0.0] - 2024-09-15
+## [1.0.0]
 
 ### Hinzugefügt (Added)
 - 📝 **Grundlegende Inhaltssammlung**: Webseitentext auswählen und per Rechtsklick in Notion speichern
@@ -100,6 +102,9 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 - [Haupt-Projekt-README](README_de.md)
 - [Chinesische Versionsgeschichte](CHANGELOG.md)
+- [Englische Versionsgeschichte](CHANGELOG_en.md)
+- [Japanische Versionsgeschichte](CHANGELOG_ja.md)
+- [Koreanische Versionsgeschichte](CHANGELOG_ko.md)
 - [Installationsanleitung](README_de.md#🚀-installationsschritte)
 - [Verwendungsanweisungen](README_de.md#📱-verwendung)
 

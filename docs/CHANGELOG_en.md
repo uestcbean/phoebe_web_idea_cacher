@@ -1,5 +1,7 @@
 # ![Logo](../icons/icon48.png) Phoebe - Changelog
 
+*Other Language Versions: [中文](CHANGELOG.md) | [日本語](CHANGELOG_ja.md) | [한국어](CHANGELOG_ko.md) | [Deutsch](CHANGELOG_de.md)*
+
 ## 📋 Changelog
 
 All notable changes to this project will be documented in this file.
@@ -9,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.3] - 2024-12-21 🎉
+## [1.0.3] 🎉
 
 ### Added
 - ⚡ **Complete Quick Note Reconstruction**: Enhanced configuration retrieval logic, fixed target page name display issue
@@ -34,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.2] - 2024-11-15
+## [1.0.2]
 
 ### Added
 - 🎯 **Intelligent Mode Selection**: Support for both Page Mode and Database Mode
@@ -58,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.1] - 2024-10-20
+## [1.0.1]
 
 ### Added
 - 🗃️ **Database Mode Support**: Support for Notion Database API, replacing simple page connections
@@ -79,7 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2024-09-15
+## [1.0.0]
 
 ### Added
 - 📝 **Basic Content Collection**: Select webpage text, right-click to save to Notion
@@ -100,7 +102,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [Main Project README](README_en.md)
 - [Chinese Changelog](CHANGELOG.md)
-- [Installation Guide](README_en.md#🚀-installation)
+- [Japanese Changelog](CHANGELOG_ja.md)
+- [Korean Changelog](CHANGELOG_ko.md)
+- [German Changelog](CHANGELOG_de.md)
+- [Installation Guide](README_en.md#🚀-installation-steps)
 - [Usage Instructions](README_en.md#📱-usage)
 
 ---
