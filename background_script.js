@@ -7,6 +7,64 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+// 处理快捷键事件
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command === 'quick-note') {
+    try {
+      // 获取当前活动标签页
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      if (!activeTab) {
+        console.log('未找到活动标签页');
+        return;
+      }
+      
+      // 检查配置
+      const config = await chrome.storage.sync.get(['notionToken', 'mode', 'targetPageId', 'targetDatabaseId', 'databaseId']);
+      
+      if (!config.notionToken) {
+        chrome.tabs.sendMessage(activeTab.id, {
+          action: "showError",
+          message: chrome.i18n.getMessage('errorNotConfigured') || "请先在插件设置中配置Notion API密钥"
+        });
+        return;
+      }
+      
+      const mode = config.mode || 'database'; // 默认数据库模式，兼容旧配置
+      
+      // 根据模式检查必要的配置
+      if (mode === 'page' && !config.targetPageId) {
+        chrome.tabs.sendMessage(activeTab.id, {
+          action: "showError",
+          message: chrome.i18n.getMessage('pageModeRequiresTargetPage') || "页面模式需要先在设置中配置目标页面"
+        });
+        return;
+      } else if (mode === 'database') {
+        const databaseId = config.targetDatabaseId || config.databaseId; // 兼容旧配置
+        if (!databaseId) {
+          chrome.tabs.sendMessage(activeTab.id, {
+            action: "showError",
+            message: chrome.i18n.getMessage('databaseModeRequiresTargetDatabase') || "数据库模式需要先在设置中配置目标数据库"
+          });
+          return;
+        }
+      }
+      
+      // 发送快速笔记事件到内容脚本
+      chrome.tabs.sendMessage(activeTab.id, {
+        action: "showQuickNote",
+        data: {
+          url: activeTab.url,
+          title: activeTab.title,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('处理快捷键事件失败:', error);
+    }
+  }
+});
+
 // 处理右键菜单点击
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === "saveToNotion") {
@@ -33,7 +91,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (mode === 'page' && !config.targetPageId) {
       chrome.tabs.sendMessage(tab.id, {
         action: "showError",
-        message: "页面模式需要先在设置中配置目标页面"
+        message: chrome.i18n.getMessage('pageModeRequiresTargetPage') || "页面模式需要先在设置中配置目标页面"
       });
       return;
     } else if (mode === 'database') {
@@ -41,7 +99,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       if (!databaseId) {
         chrome.tabs.sendMessage(tab.id, {
           action: "showError",
-          message: "数据库模式需要先在设置中配置目标数据库"
+          message: chrome.i18n.getMessage('databaseModeRequiresTargetDatabase') || "数据库模式需要先在设置中配置目标数据库"
         });
         return;
       }
@@ -78,11 +136,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         
         // 根据模式检查必要的配置
         if (mode === 'page' && !config.targetPageId) {
-          throw new Error('页面模式需要配置目标页面');
+          throw new Error(chrome.i18n.getMessage('pageModeNeedsConfig') || '页面模式需要配置目标页面');
         } else if (mode === 'database') {
           const databaseId = config.targetDatabaseId || config.databaseId; // 兼容旧配置
           if (!databaseId) {
-            throw new Error('数据库模式需要配置目标数据库');
+            throw new Error(chrome.i18n.getMessage('databaseModeNeedsConfig') || '数据库模式需要配置目标数据库');
           }
           // 更新config中的databaseId以便saveToNotion函数使用
           config.databaseId = databaseId;
@@ -188,8 +246,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const texts = {
       saveDialogTitle: chrome.i18n.getMessage('saveDialogTitle') || '保存到Notion',
       saveDialogContent: chrome.i18n.getMessage('saveDialogContent') || '选中内容:',
-      saveDialogNote: chrome.i18n.getMessage('saveDialogNote') || '备注 (可选):',
-      saveDialogNotePlaceholder: chrome.i18n.getMessage('saveDialogNotePlaceholder') || '添加备注...',
+      saveDialogNote: chrome.i18n.getMessage('saveDialogNote') || '备注 (必填):',
+      saveDialogNotePlaceholder: chrome.i18n.getMessage('saveDialogNotePlaceholder') || '请输入笔记内容（必填）...',
       saveDialogTags: chrome.i18n.getMessage('saveDialogTags') || '标签 (可选):',
       saveDialogTagsPlaceholder: chrome.i18n.getMessage('saveDialogTagsPlaceholder') || '输入标签，回车添加，或从下拉列表选择',
       buttonCancel: chrome.i18n.getMessage('buttonCancel') || '取消',
@@ -214,10 +272,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       pageNameExists: chrome.i18n.getMessage('pageNameExists') || '已存在同名页面，请使用其他名称',
       createPageFailed: chrome.i18n.getMessage('createPageFailed') || '创建页面失败',
       phoebeWorking: chrome.i18n.getMessage('phoebeWorking') || 'Phoebe正在工作中',
-      creatingPage: chrome.i18n.getMessage('creatingPage') || '正在努力帮你创建页面\"$PAGE$\"...<br>请稍等片刻 ✨',
+      creatingPage: chrome.i18n.getMessage('creatingPage') || '正在努力帮你创建页面"$PAGE$"...<br>请稍等片刻 ✨',
       phoebeSaving: chrome.i18n.getMessage('phoebeSaving') || 'Phoebe正在保存',
       savingToNotion: chrome.i18n.getMessage('savingToNotion') || '正在保存到Notion中...<br>请稍等片刻 ✨',
-      pageCreatedSuccess: chrome.i18n.getMessage('pageCreatedSuccess') || '新页面 \"$PAGE$\" 创建成功',
+      pageCreatedSuccess: chrome.i18n.getMessage('pageCreatedSuccess') || '新页面 "$PAGE$" 创建成功',
       extensionNotInitializedRetry: chrome.i18n.getMessage('extensionNotInitializedRetry') || '扩展未初始化，请刷新页面重试',
       pleaseSelectPage: chrome.i18n.getMessage('pleaseSelectPage') || '请选择一个页面',
       pleaseFillApiAndDatabase: chrome.i18n.getMessage('pleaseFillApiAndDatabase') || '请填写API密钥和Database ID',
@@ -265,7 +323,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       clearFailed: chrome.i18n.getMessage('clearFailed') || 'Clear failed',
       clickToDelete: chrome.i18n.getMessage('clickToDelete') || 'Click to delete',
       tagDeleted: chrome.i18n.getMessage('tagDeleted') || 'Tag deleted',
-      deleteFailed: chrome.i18n.getMessage('deleteFailed') || 'Delete failed'
+      deleteFailed: chrome.i18n.getMessage('deleteFailed') || 'Delete failed',
+      // 快速笔记相关翻译
+      quickNoteTitle: chrome.i18n.getMessage('quickNoteTitle') || '快速笔记',
+      quickNotePageInfo: chrome.i18n.getMessage('quickNotePageInfo') || '当前网页：',
+      notePlaceholder: chrome.i18n.getMessage('notePlaceholder') || '请在此输入您的笔记内容（必填）...',
+      pleaseEnterNote: chrome.i18n.getMessage('pleaseEnterNote') || '请输入笔记内容',
+      // 页面和数据库模式错误提示
+      pageModeRequiresTargetPage: chrome.i18n.getMessage('pageModeRequiresTargetPage') || '页面模式需要先在设置中配置目标页面',
+      databaseModeRequiresTargetDatabase: chrome.i18n.getMessage('databaseModeRequiresTargetDatabase') || '数据库模式需要先在设置中配置目标数据库',
+      pageModeNeedsConfig: chrome.i18n.getMessage('pageModeNeedsConfig') || '页面模式需要配置目标页面',
+      databaseModeNeedsConfig: chrome.i18n.getMessage('databaseModeNeedsConfig') || '数据库模式需要配置目标数据库',
+      // 友好对话框相关翻译
+      friendlyTip: chrome.i18n.getMessage('friendlyTip') || 'Phoebe 提示',
+      requiredFieldTitle: chrome.i18n.getMessage('requiredFieldTitle') || '必填项提醒',
+      buttonOK: chrome.i18n.getMessage('buttonOK') || '好的',
+      confirmTitle: chrome.i18n.getMessage('confirmTitle') || 'Phoebe 确认',
+      confirmClearTagsTitle: chrome.i18n.getMessage('confirmClearTagsTitle') || '确认清空标签',
+      buttonConfirm: chrome.i18n.getMessage('buttonConfirm') || '确认'
     };
     sendResponse({ success: true, texts });
     return true;
@@ -368,8 +443,13 @@ async function appendToPage(data, config) {
           }
         ]
       }
-    },
-    {
+    }
+  ];
+
+  // 添加来源信息块（根据是否有有效URL决定格式）
+  if (data.url && data.url.trim() && data.url !== '') {
+    // 有有效URL，添加链接格式
+    children.push({
       object: "block",
       type: "paragraph",
       paragraph: {
@@ -391,8 +471,25 @@ async function appendToPage(data, config) {
           }
         ]
       }
-    }
-  ];
+    });
+  } else if (data.title && data.title.trim() && !data.title.startsWith('快速笔记')) {
+    // 没有URL但有标题（且不是快速笔记标题），显示普通文本
+    children.push({
+      object: "block",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            type: "text",
+            text: {
+              content: `📄 来源: ${data.title}`
+            }
+          }
+        ]
+      }
+    });
+  }
+  // 如果是快速笔记（title以'快速笔记'开头且没有URL），则不添加来源信息
 
   // 如果有备注，添加备注块
   if (data.note && data.note.trim()) {
@@ -492,8 +589,13 @@ async function createPageInDatabase(data, config) {
           }
         ]
       }
-    },
-    {
+    }
+  ];
+
+  // 添加来源信息块（根据是否有有效URL决定格式）
+  if (data.url && data.url.trim() && data.url !== '') {
+    // 有有效URL，添加链接格式
+    children.push({
       object: "block",
       type: "paragraph",
       paragraph: {
@@ -515,8 +617,25 @@ async function createPageInDatabase(data, config) {
           }
         ]
       }
-    }
-  ];
+    });
+  } else if (data.title && data.title.trim() && !data.title.startsWith('快速笔记')) {
+    // 没有URL但有标题（且不是快速笔记标题），显示普通文本
+    children.push({
+      object: "block",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            type: "text",
+            text: {
+              content: `📄 来源: ${data.title}`
+            }
+          }
+        ]
+      }
+    });
+  }
+  // 如果是快速笔记（title以'快速笔记'开头且没有URL），则不添加来源信息
 
   // 如果有备注，添加备注块
   if (data.note && data.note.trim()) {
@@ -529,6 +648,24 @@ async function createPageInDatabase(data, config) {
             type: "text",
             text: {
               content: `💭 备注: ${data.note}`
+            }
+          }
+        ]
+      }
+    });
+  }
+
+  // 如果有标签，添加标签块
+  if (data.tags && data.tags.length > 0) {
+    children.push({
+      object: "block",
+      type: "paragraph",
+      paragraph: {
+        rich_text: [
+          {
+            type: "text",
+            text: {
+              content: `🏷️ 标签: ${data.tags.join(', ')}`
             }
           }
         ]

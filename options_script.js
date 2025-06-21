@@ -31,11 +31,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('refreshPages').addEventListener('click', () => refreshPages());
     document.getElementById('refreshDatabases').addEventListener('click', () => refreshDatabases());
     
+    // 绑定快捷键设置事件
+    document.getElementById('changeShortcut').addEventListener('click', openShortcutSettings);
+    
     // 加载已保存的设置
     await loadSettings();
     
     // 自动加载标签历史
     loadTagHistory();
+    
+    // 加载当前快捷键设置
+    await loadCurrentShortcut();
 });
 
 // 初始化国际化
@@ -638,6 +644,19 @@ function showStatus(message, type = 'success') {
     }, 3000);
 }
 
+// 显示标签管理专用的状态消息
+function showTagStatus(message, type = 'success') {
+    const statusEl = document.getElementById('tagStatus');
+    statusEl.textContent = message;
+    statusEl.className = `status ${type}`;
+    statusEl.style.display = 'block';
+    
+    // 3秒后自动隐藏
+    setTimeout(() => {
+        statusEl.style.display = 'none';
+    }, 3000);
+}
+
 // 标签管理功能
 async function loadTagHistory() {
     const loadBtn = document.getElementById('loadTags');
@@ -664,25 +683,30 @@ async function loadTagHistory() {
 }
 
 async function clearTagHistory() {
-    if (!confirm(getI18nMessage('confirmClearTags'))) {
-        return;
-    }
-    
-    const clearBtn = document.getElementById('clearTags');
-    const originalText = clearBtn.textContent;
-    clearBtn.textContent = getI18nMessage('buttonClearing');
-    clearBtn.disabled = true;
-    
-    try {
-        await chrome.storage.local.remove(['tagHistory']);
-        displayTags([]);
-        showStatus(`✅ ${getI18nMessage('tagsCleared') || 'Tag history cleared'}`, 'success');
-    } catch (error) {
-        showStatus(`❌ ${getI18nMessage('clearFailed') || 'Clear failed'}: ${error.message}`, 'error');
-    } finally {
-        clearBtn.textContent = originalText;
-        clearBtn.disabled = false;
-    }
+    // 显示友好的确认对话框
+    showFriendlyConfirm(
+        getI18nMessage('confirmClearTags'),
+        getI18nMessage('confirmClearTagsTitle') || '确认清除',
+        '🗑️',
+        async () => {
+            // 确认后的操作
+            const clearBtn = document.getElementById('clearTags');
+            const originalText = clearBtn.textContent;
+            clearBtn.textContent = getI18nMessage('buttonClearing');
+            clearBtn.disabled = true;
+            
+            try {
+                await chrome.storage.local.remove(['tagHistory']);
+                displayTags([]);
+                showTagStatus(`✅ ${getI18nMessage('tagsCleared') || 'Tag history cleared'}`, 'success');
+            } catch (error) {
+                showTagStatus(`❌ ${getI18nMessage('clearFailed') || 'Clear failed'}: ${error.message}`, 'error');
+            } finally {
+                clearBtn.textContent = originalText;
+                clearBtn.disabled = false;
+            }
+        }
+    );
 }
 
 function displayTags(tags) {
@@ -722,8 +746,146 @@ async function removeTag(tagToRemove) {
         
         await chrome.storage.local.set({ tagHistory });
         displayTags(tagHistory);
-        showStatus(`✅ ${getI18nMessage('tagDeleted') || 'Tag deleted'}: ${tagToRemove}`, 'success');
+        showTagStatus(`✅ ${getI18nMessage('tagDeleted') || 'Tag deleted'}: ${tagToRemove}`, 'success');
     } catch (error) {
-        showStatus(`❌ ${getI18nMessage('deleteFailed') || 'Delete failed'}: ${error.message}`, 'error');
+        showTagStatus(`❌ ${getI18nMessage('deleteFailed') || 'Delete failed'}: ${error.message}`, 'error');
     }
+}
+
+// 快捷键管理功能
+async function loadCurrentShortcut() {
+    try {
+        const commands = await chrome.commands.getAll();
+        const quickNoteCommand = commands.find(cmd => cmd.name === 'quick-note');
+        
+        const shortcutDisplay = document.getElementById('currentShortcutDisplay');
+        if (quickNoteCommand && quickNoteCommand.shortcut) {
+            shortcutDisplay.textContent = quickNoteCommand.shortcut;
+            shortcutDisplay.style.color = '#0066cc';
+            shortcutDisplay.style.fontWeight = 'bold';
+        } else {
+            shortcutDisplay.textContent = getI18nMessage('notSet') || '未设置';
+            shortcutDisplay.style.color = '#999';
+            shortcutDisplay.style.fontWeight = 'normal';
+        }
+    } catch (error) {
+        console.log('获取快捷键失败:', error);
+        const shortcutDisplay = document.getElementById('currentShortcutDisplay');
+        shortcutDisplay.textContent = getI18nMessage('notSet') || '未设置';
+        shortcutDisplay.style.color = '#999';
+        shortcutDisplay.style.fontWeight = 'normal';
+    }
+}
+
+function openShortcutSettings() {
+    // 打开Chrome扩展的快捷键设置页面
+    chrome.tabs.create({
+        url: 'chrome://extensions/shortcuts'
+    });
+}
+
+// 显示友好的确认对话框
+function showFriendlyConfirm(message, title = null, icon = '❓', onConfirm = null) {
+    const iconUrl = chrome.runtime.getURL('icons/icon48.png');
+    
+    const dialog = document.createElement('div');
+    dialog.id = 'friendly-confirm-dialog';
+    dialog.innerHTML = `
+        <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10003;
+            width: 360px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            text-align: center;
+        ">
+            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                <img src="${iconUrl}" style="width: 24px; height: 24px; margin-right: 8px;">
+                <h3 style="margin: 0; color: #333; font-size: 16px;">${title || getI18nMessage('confirmTitle') || 'Phoebe 确认'}</h3>
+            </div>
+            
+            <div style="font-size: 32px; margin-bottom: 15px;">${icon}</div>
+            
+            <p style="margin: 0 0 20px 0; color: #666; font-size: 14px; line-height: 1.4;">
+                ${message}
+            </p>
+            
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="friendly-confirm-cancel" style="
+                    padding: 10px 20px;
+                    background: #f0f0f0;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                ">${getI18nMessage('buttonCancel') || '取消'}</button>
+                <button id="friendly-confirm-ok" style="
+                    padding: 10px 20px;
+                    background: #d32f2f;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                ">${getI18nMessage('buttonConfirm') || '确认'}</button>
+            </div>
+        </div>
+        
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 10002;
+        "></div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    // 绑定事件
+    const cancelButton = document.getElementById('friendly-confirm-cancel');
+    const okButton = document.getElementById('friendly-confirm-ok');
+    
+    const closeConfirm = () => {
+        if (dialog.parentNode) {
+            document.body.removeChild(dialog);
+        }
+    };
+    
+    cancelButton.onclick = closeConfirm;
+    
+    okButton.onclick = () => {
+        closeConfirm();
+        if (onConfirm && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    };
+    
+    // 点击背景关闭
+    dialog.children[1].onclick = closeConfirm;
+    
+    // ESC键关闭
+    const handleKeydown = (e) => {
+        if (e.key === 'Escape') {
+            closeConfirm();
+            document.removeEventListener('keydown', handleKeydown);
+        } else if (e.key === 'Enter') {
+            okButton.click();
+            document.removeEventListener('keydown', handleKeydown);
+        }
+    };
+    document.addEventListener('keydown', handleKeydown);
+    
+    // 聚焦到取消按钮（更安全的默认选择）
+    cancelButton.focus();
 } 

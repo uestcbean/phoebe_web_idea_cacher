@@ -297,6 +297,23 @@
         
         <div id="status" class="status"></div>
         
+        <!-- 快捷键设置部分 -->
+        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eee;">
+            <h2>⌨️ <span data-i18n="shortcutSettings">快捷键设置</span></h2>
+            <p style="color: #666; margin-bottom: 20px;" data-i18n="shortcutSettingsDesc">配置快速笔记功能的快捷键</p>
+            <p style="color: #666; margin-bottom: 20px; font-size: 14px;" data-i18n="shortcutInstructions">使用快捷键可以快速唤起笔记对话框，无需选中文本即可基于当前网页写笔记。</p>
+            
+            <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 15px; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <span data-i18n="currentShortcut" style="font-weight: 500;">当前快捷键：</span>
+                        <code id="currentShortcutDisplay" style="background: #fff; padding: 4px 8px; border-radius: 3px; font-family: monospace; margin-left: 8px;">Ctrl+Shift+N</code>
+                    </div>
+                    <button type="button" id="changeShortcut" class="btn-secondary" data-i18n="changeShortcut">更改快捷键</button>
+                </div>
+            </div>
+        </div>
+        
         <!-- 标签管理部分 -->
         <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eee;">
             <h2>🏷️ <span data-i18n="tagManagementTitle">标签管理</span></h2>
@@ -307,6 +324,9 @@
                     <button type="button" id="loadTags" class="btn-secondary" data-i18n="buttonRefreshTags">🔄 刷新标签</button>
                     <button type="button" id="clearTags" class="btn-secondary" style="background: #f44336; color: white; border-color: #f44336;" data-i18n="buttonClearTags">🗑️ 清空标签</button>
                 </div>
+                
+                <!-- 标签管理专用的状态提示区域 -->
+                <div id="tagStatus" class="status" style="margin-top: 15px;"></div>
                 
                 <div id="tagList" style="
                     min-height: 100px;

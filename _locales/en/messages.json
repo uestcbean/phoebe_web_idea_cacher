@@ -72,10 +72,10 @@
     "message": "Selected content:"
   },
   "saveDialogNote": {
-    "message": "Note (optional):"
+    "message": "Note (required):"
   },
   "saveDialogNotePlaceholder": {
-    "message": "Add a note..."
+    "message": "Please enter note content (required)..."
   },
   "saveDialogTags": {
     "message": "Tags (optional):"
@@ -464,5 +464,68 @@
   },
   "deleteFailed": {
     "message": "Delete failed"
+  },
+  "quickNoteShortcut": {
+    "message": "Quick Note"
+  },
+  "shortcutSettings": {
+    "message": "Shortcut Settings"
+  },
+  "shortcutSettingsDesc": {
+    "message": "Configure keyboard shortcuts for quick note feature"
+  },
+  "currentShortcut": {
+    "message": "Current shortcut:"
+  },
+  "changeShortcut": {
+    "message": "Set Shortcut"
+  },
+  "shortcutInstructions": {
+    "message": "The quick note feature requires setting up a keyboard shortcut first. Click the button below to access Chrome's shortcut settings page."
+  },
+  "quickNoteTitle": {
+    "message": "Quick Note"
+  },
+  "quickNotePageInfo": {
+    "message": "Current webpage:"
+  },
+  "notePlaceholder": {
+    "message": "Please enter your notes here (required)..."
+  },
+  "pleaseEnterNote": {
+    "message": "Please enter note content"
+  },
+  "notSet": {
+    "message": "Not set"
+  },
+  "pageModeRequiresTargetPage": {
+    "message": "Page mode requires configuring a target page in settings first"
+  },
+  "databaseModeRequiresTargetDatabase": {
+    "message": "Database mode requires configuring a target database in settings first"
+  },
+  "pageModeNeedsConfig": {
+    "message": "Page mode requires target page configuration"
+  },
+  "databaseModeNeedsConfig": {
+    "message": "Database mode requires target database configuration"
+  },
+  "friendlyTip": {
+    "message": "Phoebe Tip"
+  },
+  "requiredFieldTitle": {
+    "message": "Required Field"
+  },
+  "buttonOK": {
+    "message": "OK"
+  },
+  "confirmTitle": {
+    "message": "Phoebe Confirm"
+  },
+  "confirmClearTagsTitle": {
+    "message": "Confirm Clear Tags"
+  },
+  "buttonConfirm": {
+    "message": "Confirm"
   }
 } 

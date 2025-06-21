@@ -72,10 +72,10 @@
     "message": "選択されたコンテンツ:"
   },
   "saveDialogNote": {
-    "message": "メモ (任意):"
+    "message": "メモ (必須):"
   },
   "saveDialogNotePlaceholder": {
-    "message": "メモを追加..."
+    "message": "メモ内容を入力してください（必須）..."
   },
   "saveDialogTags": {
     "message": "タグ (任意):"
@@ -456,5 +456,68 @@
   },
   "deleteFailed": {
     "message": "削除に失敗しました"
+  },
+  "quickNoteShortcut": {
+    "message": "クイックノート"
+  },
+  "shortcutSettings": {
+    "message": "ショートカット設定"
+  },
+  "shortcutSettingsDesc": {
+    "message": "クイックノート機能のキーボードショートカットを設定"
+  },
+  "currentShortcut": {
+    "message": "現在のショートカット："
+  },
+  "changeShortcut": {
+    "message": "ショートカットを設定"
+  },
+  "shortcutInstructions": {
+    "message": "クイックノート機能を使用するには、まずキーボードショートカットを設定する必要があります。下のボタンをクリックしてChromeのショートカット設定ページにアクセスしてください。"
+  },
+  "quickNoteTitle": {
+    "message": "クイックノート"
+  },
+  "quickNotePageInfo": {
+    "message": "現在のウェブページ："
+  },
+  "notePlaceholder": {
+    "message": "ここにメモを入力してください（必須）..."
+  },
+  "pleaseEnterNote": {
+    "message": "メモ内容を入力してください"
+  },
+  "notSet": {
+    "message": "未設定"
+  },
+  "pageModeRequiresTargetPage": {
+    "message": "ページモードでは設定で対象ページを先に設定する必要があります"
+  },
+  "databaseModeRequiresTargetDatabase": {
+    "message": "データベースモードでは設定で対象データベースを先に設定する必要があります"
+  },
+  "pageModeNeedsConfig": {
+    "message": "ページモードでは対象ページの設定が必要です"
+  },
+  "databaseModeNeedsConfig": {
+    "message": "データベースモードは対象データベースの設定が必要です"
+  },
+  "friendlyTip": {
+    "message": "Phoebe ヒント"
+  },
+  "requiredFieldTitle": {
+    "message": "必須項目のお知らせ"
+  },
+  "buttonOK": {
+    "message": "はい"
+  },
+  "confirmTitle": {
+    "message": "Phoebe 確認"
+  },
+  "confirmClearTagsTitle": {
+    "message": "タグ削除の確認"
+  },
+  "buttonConfirm": {
+    "message": "確認"
   }
 } 

@@ -72,10 +72,10 @@
     "message": "선택된 콘텐츠:"
   },
   "saveDialogNote": {
-    "message": "메모 (선택사항):"
+    "message": "메모 (필수):"
   },
   "saveDialogNotePlaceholder": {
-    "message": "메모 추가..."
+    "message": "메모 내용을 입력하세요 (필수)..."
   },
   "saveDialogTags": {
     "message": "태그 (선택사항):"
@@ -456,5 +456,68 @@
   },
   "deleteFailed": {
     "message": "삭제 실패"
+  },
+  "quickNoteShortcut": {
+    "message": "빠른 메모"
+  },
+  "shortcutSettings": {
+    "message": "단축키 설정"
+  },
+  "shortcutSettingsDesc": {
+    "message": "빠른 메모 기능의 키보드 단축키 구성"
+  },
+  "currentShortcut": {
+    "message": "현재 단축키:"
+  },
+  "changeShortcut": {
+    "message": "단축키 설정"
+  },
+  "shortcutInstructions": {
+    "message": "빠른 메모 기능을 사용하려면 먼저 키보드 단축키를 설정해야 합니다. 아래 버튼을 클릭하여 Chrome의 단축키 설정 페이지에 접속하세요."
+  },
+  "quickNoteTitle": {
+    "message": "빠른 메모"
+  },
+  "quickNotePageInfo": {
+    "message": "현재 웹페이지:"
+  },
+  "notePlaceholder": {
+    "message": "여기에 메모를 입력하세요 (필수)..."
+  },
+  "pleaseEnterNote": {
+    "message": "메모 내용을 입력해주세요"
+  },
+  "notSet": {
+    "message": "설정되지 않음"
+  },
+  "pageModeRequiresTargetPage": {
+    "message": "페이지 모드는 설정에서 대상 페이지를 먼저 구성해야 합니다"
+  },
+  "databaseModeRequiresTargetDatabase": {
+    "message": "데이터베이스 모드는 설정에서 대상 데이터베이스를 먼저 구성해야 합니다"
+  },
+  "pageModeNeedsConfig": {
+    "message": "페이지 모드는 대상 페이지 구성이 필요합니다"
+  },
+  "databaseModeNeedsConfig": {
+    "message": "데이터베이스 모드는 대상 데이터베이스 구성이 필요합니다"
+  },
+  "friendlyTip": {
+    "message": "Phoebe 팁"
+  },
+  "requiredFieldTitle": {
+    "message": "필수 항목 알림"
+  },
+  "buttonOK": {
+    "message": "확인"
+  },
+  "confirmTitle": {
+    "message": "Phoebe 확인"
+  },
+  "confirmClearTagsTitle": {
+    "message": "태그 지우기 확인"
+  },
+  "buttonConfirm": {
+    "message": "확인"
   }
 } 

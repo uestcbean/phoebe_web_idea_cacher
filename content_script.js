@@ -25,6 +25,9 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.action === "saveToNotion") {
     await initI18nTexts(); // 每次显示对话框前获取最新的本地化文本
     await showSaveDialog(request.data);
+  } else if (request.action === "showQuickNote") {
+    await initI18nTexts(); // 每次显示对话框前获取最新的本地化文本
+    await showQuickNoteDialog(request.data);
   } else if (request.action === "showError") {
     showNotification(request.message, 'error');
   }
@@ -46,7 +49,6 @@ async function showSaveDialog(data) {
   let pageSelectionHtml = '';
   if (mode === 'page') {
     // 页面模式：显示目标页面信息，不提供选择
-    // 尝试获取页面标题，如果无法获取则显示默认文本
     let targetPageName = getI18nText('targetPageConfigured', '已配置目标页面');
     
     // 异步获取页面标题（稍后会更新显示）
@@ -341,7 +343,7 @@ async function showSaveDialog(data) {
   // 只在数据库模式下初始化页面选择
   if (mode === 'database') {
     initPageSelection();
-      } else if (mode === 'page') {
+  } else if (mode === 'page') {
     // 页面模式下获取并显示页面信息
     // 重新获取完整配置，确保包含notionToken
     const fullConfig = await chrome.storage.sync.get(['notionToken', 'targetPageId']);
@@ -351,8 +353,14 @@ async function showSaveDialog(data) {
   
   // 创建一个闭包函数来保存内容，确保data可以被访问到
   const saveContentWithData = async () => {
-    const note = document.getElementById('notion-note').value;
+    const note = document.getElementById('notion-note').value.trim();
     const tags = getSelectedTags();
+    
+    // 验证Note是必填的
+    if (!note) {
+      showFieldValidationError('notion-note', getI18nText('pleaseEnterNote', '请输入笔记内容'));
+      throw new Error('validation-failed'); // 抛出特殊错误，表示验证失败
+    }
     
     // 检查background script是否可用
     if (!chrome.runtime || !chrome.runtime.id) {
@@ -433,11 +441,15 @@ async function showSaveDialog(data) {
     try {
       await saveContentWithData();
       hideSaveLoading();
-      closeDialog();
+      closeDialog(); // 只有保存成功才关闭对话框
     } catch (error) {
       hideSaveLoading();
       console.error('保存失败:', error);
-      showNotification(`❌ 保存失败: ${error.message}`, 'error');
+      
+      // 如果是验证失败，不显示错误通知，因为已经显示了验证提示
+      if (error.message !== 'validation-failed') {
+        showNotification(`❌ 保存失败: ${error.message}`, 'error');
+      }
     } finally {
       // 重新启用按钮
       disableDialogButtons(false);
@@ -1168,10 +1180,483 @@ function hideSaveLoading() {
 
 // 关闭对话框
 function closeDialog() {
+  console.log('🚪 [对话框] 开始关闭对话框');
+  
+  // 清理所有可能的验证错误提示
+  const errorElements = document.querySelectorAll('[id$="-error"]');
+  errorElements.forEach(error => {
+    console.log('🧹 [对话框] 清理错误提示:', error.id);
+    error.remove();
+  });
+  
+  // 清理可能残留的动画样式
+  const animationStyles = document.querySelectorAll('style[textContent*="@keyframes shake"]');
+  animationStyles.forEach(style => {
+    console.log('🧹 [对话框] 清理动画样式');
+    style.remove();
+  });
+  
+  // 检查并关闭普通保存对话框
   const dialog = document.getElementById('notion-save-dialog');
-  if (dialog) {
+  if (dialog && dialog.parentNode) {
+    console.log('🗑️ [对话框] 关闭普通保存对话框');
     document.body.removeChild(dialog);
   }
+  
+  // 检查并关闭快速笔记对话框
+  const quickNoteDialog = document.getElementById('notion-quick-note-dialog');
+  if (quickNoteDialog && quickNoteDialog.parentNode) {
+    console.log('🗑️ [对话框] 关闭快速笔记对话框');
+    document.body.removeChild(quickNoteDialog);
+  }
+  
+  // 清理任何可能的字段样式重置
+  const noteField = document.getElementById('notion-note');
+  if (noteField) {
+    console.log('🧹 [对话框] 重置字段样式');
+    noteField.style.removeProperty('border-color');
+    noteField.style.removeProperty('box-shadow');
+  }
+  
+  console.log('✅ [对话框] 对话框关闭完成');
+}
+
+// 显示快速笔记对话框
+async function showQuickNoteDialog(data) {
+  // 获取完整配置，包括notionToken
+  const config = await chrome.storage.sync.get(['mode', 'targetPageId', 'targetDatabaseId', 'databaseId', 'notionToken']);
+  const mode = config.mode || 'database'; // 默认数据库模式，兼容旧配置
+  
+  console.log('显示快速笔记对话框，模式:', mode, '配置:', config);
+  
+  // 创建对话框
+  const dialog = document.createElement('div');
+  dialog.id = 'notion-quick-note-dialog';
+  
+  // 根据模式生成不同的页面选择区域
+  let pageSelectionHtml = '';
+  if (mode === 'page') {
+    // 页面模式：显示目标页面信息
+    pageSelectionHtml = `
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveToTargetPage', '保存到目标页面:')}</label>
+        <div id="target-page-info" style="
+          padding: 8px 12px;
+          background: #f0f8ff;
+          border: 1px solid #b3d9ff;
+          border-radius: 4px;
+          font-size: 14px;
+          color: #0066cc;
+        ">
+          📄 ${config.targetPageId && config.notionToken ? getI18nText('loadingPageInfo', '正在获取页面信息...') : getI18nText('targetPageConfigured', '已配置目标页面')}
+        </div>
+        <div style="font-size: 12px; color: #666; margin-top: 4px;">
+          ${getI18nText('contentWillAppend', '内容将直接追加到此页面末尾')}
+        </div>
+      </div>`;
+  } else {
+    // 数据库模式：提供页面选择和新建选项
+    pageSelectionHtml = `
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('selectPage', '选择页面:')}</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <select id="notion-page-select" style="
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+          ">
+            <option value="">${getI18nText('loadingPages', '加载中...')}</option>
+          </select>
+          <button id="notion-create-page" style="
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+          ">${getI18nText('createNewPage', '新建页面')}</button>
+        </div>
+      </div>`;
+  }
+  
+  dialog.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      width: 450px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    ">
+      <h3 style="margin: 0 0 15px 0; color: #333 !important; display: flex; align-items: center; gap: 8px; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important; font-weight: 600 !important; font-size: 18px !important;">
+        <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
+        ${getI18nText('quickNoteTitle', '快速笔记')}
+      </h3>
+      
+      ${pageSelectionHtml}
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveDialogNote', '笔记内容：')}</label>
+        <textarea id="notion-note" placeholder="${getI18nText('notePlaceholder', '在此写下您的想法、灵感或笔记...')}" style="
+          width: 100%;
+          height: 140px;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
+          resize: vertical;
+          box-sizing: border-box;
+          line-height: 1.5;
+        "></textarea>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #333 !important; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important;">${getI18nText('saveDialogTags', '标签 (可选):')}</label>
+        <div id="notion-tags-container" style="
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          padding: 8px;
+          min-height: 40px;
+          background: white;
+          cursor: text;
+        ">
+          <div id="selected-tags" style="
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 4px;
+          "></div>
+          <input id="notion-tag-input" type="text" placeholder="${getI18nText('saveDialogTagsPlaceholder', '输入标签，回车添加，或从下拉列表选择')}" style="
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+            background: transparent;
+          ">
+        </div>
+        <div id="tag-suggestions" style="
+          max-height: 120px;
+          overflow-y: auto;
+          border: 1px solid #ddd;
+          border-top: none;
+          background: white;
+          display: none;
+        "></div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button id="notion-cancel" style="
+          padding: 10px 20px;
+          background: #f0f0f0;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        ">${getI18nText('buttonCancel', '取消')}</button>
+        <button id="notion-save" style="
+          padding: 10px 20px;
+          background: #0066cc;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        ">${getI18nText('buttonSave', '保存')}</button>
+      </div>
+    </div>
+  `;
+
+  // 添加到页面
+  document.body.appendChild(dialog);
+  
+  // 聚焦到笔记输入框
+  const noteTextarea = document.getElementById('notion-note');
+  if (noteTextarea) {
+    noteTextarea.focus();
+  }
+
+  // 绑定事件
+  document.getElementById('notion-cancel').addEventListener('click', closeDialog);
+  
+  const saveButton = document.getElementById('notion-save');
+  console.log('🔍 [快速笔记] 找到保存按钮:', saveButton);
+  
+  // 添加一个简单的点击测试
+  if (saveButton) {
+    saveButton.addEventListener('click', () => {
+      console.log('🖱️ [快速笔记] 保存按钮被点击！');
+    });
+  } else {
+    console.error('❌ [快速笔记] 保存按钮未找到！');
+  }
+  
+  // 根据模式初始化相应的功能
+  if (mode === 'page') {
+    console.log('🔍 [快速笔记] 初始化页面模式');
+    // 页面模式：初始化页面信息（现在config包含notionToken了）
+    await initPageInfo(config);
+    
+    // 保存内容事件（页面模式）
+    const saveContentForPage = async () => {
+      console.log('📝 [快速笔记-页面模式] 开始保存');
+      const note = document.getElementById('notion-note').value.trim();
+      const selectedTags = getSelectedTags();
+      
+      // 验证Note是必填的
+      if (!note) {
+        console.log('❌ [快速笔记-页面模式] 验证失败：笔记为空');
+        showFieldValidationError('notion-note', getI18nText('pleaseEnterNote', '请输入笔记内容'));
+        return;
+      }
+      
+      console.log('✅ [快速笔记-页面模式] 验证通过，开始保存流程');
+      disableDialogButtons(true);
+      await showSaveLoading();
+      
+      // 保存标签到历史记录
+      if (selectedTags.length > 0) {
+        await chrome.runtime.sendMessage({
+          action: "saveTagsToHistory",
+          tags: selectedTags
+        });
+      }
+      
+      // 构造简化的保存数据（快速笔记不需要来源信息）
+      const saveData = {
+        content: note,
+        note: '',
+        tags: selectedTags,
+        url: '', // 快速笔记不需要来源URL
+        title: `快速笔记 - ${new Date().toLocaleDateString()}`, // 简化标题
+        timestamp: new Date().toISOString(),
+        pageId: config.targetPageId
+      };
+      
+      try {
+        const response = await chrome.runtime.sendMessage({
+          action: "saveToNotionAPI",
+          data: saveData
+        });
+        
+        if (response && response.success) {
+          showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
+          setTimeout(closeDialog, 1500);
+        } else {
+          throw new Error(response?.error || getI18nText('errorNetwork', '未知错误'));
+        }
+      } catch (error) {
+        showNotification(getI18nText('saveFailed', '保存失败') + ': ' + error.message, 'error');
+      } finally {
+        hideSaveLoading();
+        disableDialogButtons(false);
+      }
+    };
+    
+    saveButton.addEventListener('click', saveContentForPage);
+    console.log('✅ [快速笔记] 已绑定页面模式保存事件');
+  } else {
+    console.log('🔍 [快速笔记] 初始化数据库模式');
+    // 数据库模式：初始化页面选择
+    await initPageSelection();
+    
+    // 保存内容事件（数据库模式）
+    const saveContentForDatabase = async () => {
+      console.log('📝 [快速笔记-数据库模式] 开始保存');
+      const note = document.getElementById('notion-note').value.trim();
+      const selectedTags = getSelectedTags();
+      const selectedPageId = document.getElementById('notion-page-select').value;
+      
+      if (!note) {
+        console.log('❌ [快速笔记-数据库模式] 验证失败：笔记为空');
+        showFieldValidationError('notion-note', getI18nText('pleaseEnterNote', '请输入笔记内容'));
+        return;
+      }
+      
+      console.log('✅ [快速笔记-数据库模式] 验证通过，开始保存流程');
+      disableDialogButtons(true);
+      await showSaveLoading();
+      
+      // 保存标签到历史记录
+      if (selectedTags.length > 0) {
+        await chrome.runtime.sendMessage({
+          action: "saveTagsToHistory",
+          tags: selectedTags
+        });
+      }
+      
+      // 构造简化的保存数据
+      const saveData = {
+        content: note,
+        note: '',
+        tags: selectedTags,
+        url: '', // 快速笔记不需要来源URL
+        title: `快速笔记 - ${new Date().toLocaleDateString()}`, // 简化标题
+        timestamp: new Date().toISOString(),
+        pageId: selectedPageId || null
+      };
+      
+      try {
+        const response = await chrome.runtime.sendMessage({
+          action: "saveToNotionAPI",
+          data: saveData
+        });
+        
+        if (response && response.success) {
+          showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
+          setTimeout(closeDialog, 1500);
+        } else {
+          throw new Error(response?.error || getI18nText('errorNetwork', '未知错误'));
+        }
+      } catch (error) {
+        showNotification(getI18nText('saveFailed', '保存失败') + ': ' + error.message, 'error');
+      } finally {
+        hideSaveLoading();
+        disableDialogButtons(false);
+      }
+    };
+    
+    saveButton.addEventListener('click', saveContentForDatabase);
+    console.log('✅ [快速笔记] 已绑定数据库模式保存事件');
+    
+    // 绑定创建页面按钮
+    const createPageButton = document.getElementById('notion-create-page');
+    if (createPageButton) {
+      createPageButton.addEventListener('click', showCreatePageDialog);
+      console.log('✅ [快速笔记] 已绑定创建页面事件');
+    }
+  }
+  
+  // 初始化标签管理
+  await initTagManagement();
+  console.log('✅ [快速笔记] 快速笔记对话框初始化完成');
+}
+
+// 显示轻量级的输入框提示
+function showFieldValidationError(fieldId, message) {
+  console.log(`🔍 [验证] 开始显示字段验证错误: ${fieldId}`, message);
+  
+  // 移除已存在的提示
+  const existingError = document.getElementById(`${fieldId}-error`);
+  if (existingError) {
+    console.log(`🧹 [验证] 移除已存在的错误提示: ${fieldId}-error`);
+    existingError.remove();
+  }
+  
+  const field = document.getElementById(fieldId);
+  if (!field) {
+    console.error(`❌ [验证] 找不到字段: ${fieldId}`);
+    return;
+  }
+  
+  console.log(`✅ [验证] 找到字段:`, field);
+  console.log(`📍 [验证] 字段位置:`, field.getBoundingClientRect());
+  console.log(`👆 [验证] 父元素:`, field.parentNode);
+  
+  // 创建错误提示元素
+  const errorDiv = document.createElement('div');
+  errorDiv.id = `${fieldId}-error`;
+  errorDiv.style.cssText = `
+    color: #d32f2f !important;
+    font-size: 12px !important;
+    margin-top: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    background: #fff3f3 !important;
+    padding: 6px 8px !important;
+    border-radius: 4px !important;
+    border: 1px solid #ffcdd2 !important;
+    animation: shake 0.3s ease-in-out !important;
+    z-index: 10001 !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  `;
+  errorDiv.innerHTML = `⚠️ ${message}`;
+  
+  // 添加抖动动画
+  const animationId = `shake-${Date.now()}`;
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes ${animationId} {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      75% { transform: translateX(2px); }
+    }
+  `;
+  document.head.appendChild(style);
+  errorDiv.style.animation = `${animationId} 0.3s ease-in-out`;
+  
+  // 在输入框后插入错误提示
+  try {
+    if (field.nextSibling) {
+      field.parentNode.insertBefore(errorDiv, field.nextSibling);
+    } else {
+      field.parentNode.appendChild(errorDiv);
+    }
+    console.log(`✅ [验证] 错误提示已插入DOM`);
+  } catch (insertError) {
+    console.error(`❌ [验证] 插入错误提示失败:`, insertError);
+    // 备选方案：直接追加到父元素
+    try {
+      field.parentNode.appendChild(errorDiv);
+      console.log(`✅ [验证] 使用备选方案插入错误提示`);
+    } catch (backupError) {
+      console.error(`❌ [验证] 备选方案也失败:`, backupError);
+      return;
+    }
+  }
+  
+  // 给输入框添加红色边框
+  field.style.setProperty('border-color', '#d32f2f', 'important');
+  field.style.setProperty('box-shadow', '0 0 0 1px #d32f2f', 'important');
+  
+  // 聚焦到出错的输入框
+  try {
+    field.focus();
+    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    console.log(`🎯 [验证] 已聚焦到错误字段`);
+  } catch (focusError) {
+    console.error(`❌ [验证] 聚焦失败:`, focusError);
+  }
+  
+  // 创建清除错误的函数
+  const clearError = () => {
+    console.log(`🧹 [验证] 清除错误提示: ${fieldId}`);
+    if (errorDiv && errorDiv.parentNode) {
+      errorDiv.remove();
+    }
+    field.style.removeProperty('border-color');
+    field.style.removeProperty('box-shadow');
+    field.removeEventListener('input', clearError);
+    field.removeEventListener('focus', clearError);
+    // 清理动画样式
+    if (style && style.parentNode) {
+      style.remove();
+    }
+  };
+  
+  // 当用户开始输入或聚焦时，立即移除提示
+  field.addEventListener('input', clearError);
+  field.addEventListener('focus', clearError);
+  
+  // 5秒后自动移除提示和红色边框
+  setTimeout(() => {
+    console.log(`⏰ [验证] 自动清除错误提示: ${fieldId}`);
+    clearError();
+  }, 5000);
+  
+  console.log(`✅ [验证] 错误提示设置完成: ${fieldId}`);
 }
 
 // 终极CSS隔离方案：使用Shadow DOM（备选方案）

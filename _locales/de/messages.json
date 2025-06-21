@@ -72,10 +72,10 @@
     "message": "Markierter Inhalt:"
   },
   "saveDialogNote": {
-    "message": "Notiz (optional):"
+    "message": "Notiz (erforderlich):"
   },
   "saveDialogNotePlaceholder": {
-    "message": "Notiz hinzufügen..."
+    "message": "Bitte Notizinhalt eingeben (erforderlich)..."
   },
   "saveDialogTags": {
     "message": "Tags (optional):"
@@ -456,5 +456,68 @@
   },
   "deleteFailed": {
     "message": "Löschen fehlgeschlagen"
+  },
+  "quickNoteShortcut": {
+    "message": "Schnellnotiz"
+  },
+  "shortcutSettings": {
+    "message": "Tastenkürzel-Einstellungen"
+  },
+  "shortcutSettingsDesc": {
+    "message": "Tastenkürzel für die Schnellnotiz-Funktion konfigurieren"
+  },
+  "currentShortcut": {
+    "message": "Aktuelles Tastenkürzel:"
+  },
+  "changeShortcut": {
+    "message": "Tastenkürzel festlegen"
+  },
+  "shortcutInstructions": {
+    "message": "Die Schnellnotiz-Funktion erfordert zunächst die Einrichtung eines Tastenkürzels. Klicken Sie auf die Schaltfläche unten, um zu Chromes Tastenkürzel-Einstellungsseite zu gelangen."
+  },
+  "quickNoteTitle": {
+    "message": "Schnellnotiz"
+  },
+  "quickNotePageInfo": {
+    "message": "Aktuelle Webseite:"
+  },
+  "notePlaceholder": {
+    "message": "Bitte geben Sie hier Ihre Notizen ein (erforderlich)..."
+  },
+  "pleaseEnterNote": {
+    "message": "Bitte geben Sie den Notizinhalt ein"
+  },
+  "notSet": {
+    "message": "Nicht festgelegt"
+  },
+  "pageModeRequiresTargetPage": {
+    "message": "Seitenmodus erfordert zuerst die Konfiguration einer Zielseite in den Einstellungen"
+  },
+  "databaseModeRequiresTargetDatabase": {
+    "message": "Datenbankmodus erfordert zuerst die Konfiguration einer Zieldatenbank in den Einstellungen"
+  },
+  "pageModeNeedsConfig": {
+    "message": "Seitenmodus benötigt Zielseiten-Konfiguration"
+  },
+  "databaseModeNeedsConfig": {
+    "message": "Datenbankmodus erfordert Zieldatenbank-Konfiguration"
+  },
+  "friendlyTip": {
+    "message": "Phoebe Tipp"
+  },
+  "requiredFieldTitle": {
+    "message": "Pflichtfeld"
+  },
+  "buttonOK": {
+    "message": "OK"
+  },
+  "confirmTitle": {
+    "message": "Phoebe Bestätigung"
+  },
+  "confirmClearTagsTitle": {
+    "message": "Tags löschen bestätigen"
+  },
+  "buttonConfirm": {
+    "message": "Bestätigen"
   }
 } 

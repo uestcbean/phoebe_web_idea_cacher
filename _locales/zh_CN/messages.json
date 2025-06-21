@@ -72,10 +72,10 @@
     "message": "选中内容:"
   },
   "saveDialogNote": {
-    "message": "备注 (可选):"
+    "message": "备注 (必填):"
   },
   "saveDialogNotePlaceholder": {
-    "message": "添加备注..."
+    "message": "请输入笔记内容（必填）..."
   },
   "saveDialogTags": {
     "message": "标签 (可选):"
@@ -464,5 +464,68 @@
   },
   "deleteFailed": {
     "message": "删除失败"
+  },
+  "quickNoteShortcut": {
+    "message": "快速笔记"
+  },
+  "shortcutSettings": {
+    "message": "快捷键设置"
+  },
+  "shortcutSettingsDesc": {
+    "message": "配置快速笔记功能的快捷键"
+  },
+  "currentShortcut": {
+    "message": "当前快捷键："
+  },
+  "changeShortcut": {
+    "message": "设置快捷键"
+  },
+  "shortcutInstructions": {
+    "message": "快速笔记功能需要设置快捷键后才能使用。点击下方按钮进入Chrome快捷键设置页面进行配置。"
+  },
+  "quickNoteTitle": {
+    "message": "快速笔记"
+  },
+  "quickNotePageInfo": {
+    "message": "当前网页："
+  },
+  "notePlaceholder": {
+    "message": "请在此输入您的笔记内容（必填）..."
+  },
+  "pleaseEnterNote": {
+    "message": "请输入笔记内容"
+  },
+  "notSet": {
+    "message": "未设置"
+  },
+  "pageModeRequiresTargetPage": {
+    "message": "页面模式需要先在设置中配置目标页面"
+  },
+  "databaseModeRequiresTargetDatabase": {
+    "message": "数据库模式需要先在设置中配置目标数据库"
+  },
+  "pageModeNeedsConfig": {
+    "message": "页面模式需要配置目标页面"
+  },
+  "databaseModeNeedsConfig": {
+    "message": "数据库模式需要配置目标数据库"
+  },
+  "friendlyTip": {
+    "message": "Phoebe 提示"
+  },
+  "requiredFieldTitle": {
+    "message": "必填项提醒"
+  },
+  "buttonOK": {
+    "message": "好的"
+  },
+  "confirmTitle": {
+    "message": "Phoebe 确认"
+  },
+  "confirmClearTagsTitle": {
+    "message": "确认清空标签"
+  },
+  "buttonConfirm": {
+    "message": "确认"
   }
 } 
