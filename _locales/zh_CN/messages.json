@@ -6,7 +6,7 @@
     "message": "将选中的文字快速追加到Notion页面中"
   },
   "contextMenuSave": {
-    "message": "保存到Notion"
+    "message": "保存笔记"
   },
   "popupTitle": {
     "message": "Phoebe"
@@ -48,7 +48,7 @@
     "message": "在网页上选中文字"
   },
   "usageStep2": {
-    "message": "右键选择\"保存到Notion\""
+    "message": "右键选择\"保存笔记\""
   },
   "usageStep3": {
     "message": "添加备注和标签（可选）"
@@ -66,7 +66,7 @@
     "message": "正在加载统计信息..."
   },
   "saveDialogTitle": {
-    "message": "保存到Notion"
+    "message": "保存笔记"
   },
   "saveDialogContent": {
     "message": "选中内容:"
@@ -93,7 +93,7 @@
     "message": "保存中..."
   },
   "saveSuccess": {
-    "message": "成功保存到Notion!"
+    "message": "笔记保存成功!"
   },
   "saveFailed": {
     "message": "保存失败"
@@ -285,7 +285,10 @@
     "message": "Phoebe正在保存"
   },
   "savingToNotion": {
-    "message": "正在保存到Notion中...<br>请稍等片刻 ✨"
+    "message": "正在保存笔记...<br>请稍等片刻 ✨"
+  },
+  "savingToNotionShort": {
+    "message": "正在保存笔记..."
   },
   "pageCreatedSuccess": {
     "message": "新页面 \\\"$PAGE$\\\" 创建成功",
@@ -527,5 +530,47 @@
   },
   "buttonConfirm": {
     "message": "确认"
+  },
+  "saveDialogAlreadyOpen": {
+    "message": "已有保存对话框打开，请先关闭后再试"
+  },
+  "quickNoteDialogAlreadyOpen": {
+    "message": "已有快速笔记对话框打开，请先关闭后再试"
+  },
+  "dialogAlreadyOpen": {
+    "message": "已有对话框打开，请先关闭后再试"
+  },
+  "contextMenuDisabled": {
+    "message": "保存笔记 (有对话框在使用中)"
+  },
+  "contextMenuDisabledSave": {
+    "message": "保存笔记 (保存对话框使用中)"
+  },
+  "contextMenuDisabledQuickNote": {
+    "message": "保存笔记 (快速笔记使用中)"
+  },
+  "quickNoteDisabled": {
+    "message": "快速笔记功能已降级：其他对话框正在使用中"
+  },
+  "quickNoteDisabledSaveOpen": {
+    "message": "快速笔记功能已降级：保存对话框正在使用中"
+  },
+  "quickNoteBlockedBySave": {
+    "message": "无法打开快速笔记：保存对话框使用中"
+  },
+  "saveBlockedByQuickNote": {
+    "message": "无法打开保存对话框：快速笔记使用中"
+  },
+  "dialogConflict": {
+    "message": "无法打开：有其他对话框使用中"
+  },
+  "globalDialogBlock": {
+    "message": "Phoebe使用中：$1正在另一个标签页运行"
+  },
+  "jumpToActiveTab": {
+    "message": "跳转到活动标签页"
+  },
+  "clickToJump": {
+    "message": "点击下方链接跳转到活动标签页："
   }
 } 

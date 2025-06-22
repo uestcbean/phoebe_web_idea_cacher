@@ -84,7 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0]
 
 ### Added
-- 📝 **Basic Content Collection**: Select webpage text, right-click to save to Notion
+- 📝 **Basic Content Collection**: Select webpage text, right-click to save to Notes
 - 🏷️ **Tag Management System**: Support for adding and managing tags
 - 🌍 **Multi-language Interface**: Initial support for Chinese and English
 - ⚙️ **Notion API Integration**: Basic API connection and authentication

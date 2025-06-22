@@ -100,11 +100,11 @@ If Phoebe shows insufficient permissions during use:
    - Check target page/database information
    - Enter your ideas, inspiration, or note content
    - Add tags (optional)
-3. Click "Save" button to save to Notion
+3. Click "Save" button to save to Notes
 
 ### 🔍 Web Content Collection
 1. Select the text you want to collect on any webpage
-2. Right-click and select "Save to Notion"
+2. Right-click and select "Save to Notes"
 3. In the popped-up Phoebe dialog:
    - Review the selected content
    - Add notes (optional)

@@ -690,21 +690,21 @@ async function clearTagHistory() {
         '🗑️',
         async () => {
             // 确认后的操作
-            const clearBtn = document.getElementById('clearTags');
-            const originalText = clearBtn.textContent;
-            clearBtn.textContent = getI18nMessage('buttonClearing');
-            clearBtn.disabled = true;
-            
-            try {
-                await chrome.storage.local.remove(['tagHistory']);
-                displayTags([]);
+    const clearBtn = document.getElementById('clearTags');
+    const originalText = clearBtn.textContent;
+    clearBtn.textContent = getI18nMessage('buttonClearing');
+    clearBtn.disabled = true;
+    
+    try {
+        await chrome.storage.local.remove(['tagHistory']);
+        displayTags([]);
                 showTagStatus(`✅ ${getI18nMessage('tagsCleared') || 'Tag history cleared'}`, 'success');
-            } catch (error) {
+    } catch (error) {
                 showTagStatus(`❌ ${getI18nMessage('clearFailed') || 'Clear failed'}: ${error.message}`, 'error');
-            } finally {
-                clearBtn.textContent = originalText;
-                clearBtn.disabled = false;
-            }
+    } finally {
+        clearBtn.textContent = originalText;
+        clearBtn.disabled = false;
+    }
         }
     );
 }
@@ -882,7 +882,7 @@ function showFriendlyConfirm(message, title = null, icon = '❓', onConfirm = nu
         } else if (e.key === 'Enter') {
             okButton.click();
             document.removeEventListener('keydown', handleKeydown);
-        }
+    }
     };
     document.addEventListener('keydown', handleKeydown);
     

@@ -6,7 +6,7 @@
     "message": "選択したテキストを素早くNotionページに追加"
   },
   "contextMenuSave": {
-    "message": "Notionに保存"
+    "message": "ノートに保存"
   },
   "popupTitle": {
     "message": "Phoebe"
@@ -48,7 +48,7 @@
     "message": "Webページでテキストを選択"
   },
   "usageStep2": {
-    "message": "右クリックして「Notionに保存」を選択"
+    "message": "右クリックして「ノートに保存」を選択"
   },
   "usageStep3": {
     "message": "メモとタグを追加（任意）"
@@ -66,7 +66,7 @@
     "message": "統計情報を読み込み中..."
   },
   "saveDialogTitle": {
-    "message": "Notionに保存"
+    "message": "ノートに保存"
   },
   "saveDialogContent": {
     "message": "選択されたコンテンツ:"
@@ -93,7 +93,7 @@
     "message": "保存中..."
   },
   "saveSuccess": {
-    "message": "Notionに正常に保存されました！"
+    "message": "ノートに正常に保存されました！"
   },
   "saveFailed": {
     "message": "保存に失敗しました"
@@ -277,7 +277,7 @@
     "message": "Phoebeが保存中"
   },
   "savingToNotion": {
-    "message": "Notionに保存中です...<br>しばらくお待ちください ✨"
+    "message": "ノートに保存中です...<br>しばらくお待ちください ✨"
   },
   "pageCreatedSuccess": {
     "message": "新しいページ \\\"$PAGE$\\\" を作成しました",
@@ -519,5 +519,29 @@
   },
   "buttonConfirm": {
     "message": "確認"
+  },
+  "saveDialogAlreadyOpen": {
+    "message": "保存ダイアログが既に開いています。先に閉じてください"
+  },
+  "quickNoteDialogAlreadyOpen": {
+    "message": "クイックノートダイアログが既に開いています。先に閉じてください"
+  },
+  "dialogAlreadyOpen": {
+    "message": "ダイアログが既に開いています。先に閉じてください"
+  },
+  "contextMenuDisabled": {
+    "message": "ノートに保存 (ダイアログ開いています)"
+  },
+  "contextMenuDisabledSave": {
+    "message": "ノートに保存 (保存ダイアログ開いています)"
+  },
+  "contextMenuDisabledQuickNote": {
+    "message": "ノートに保存 (クイックノート開いています)"
+  },
+  "quickNoteDisabled": {
+    "message": "クイックノート機能が制限されました：他のダイアログが使用中です"
+  },
+  "quickNoteDisabledSaveOpen": {
+    "message": "クイックノート機能が制限されました：保存ダイアログが使用中です"
   }
 } 

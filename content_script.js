@@ -1,6 +1,198 @@
 // 本地化文本缓存
 let i18nTexts = {};
 
+// 功能开关配置（与background_script保持一致）
+const FEATURE_FLAGS = {
+  // 跨页面对话框互斥功能（可以通过这个开关快速启用/禁用）
+  CROSS_TAB_DIALOG_MUTEX: false, // 设为 false 暂时禁用跨页面互斥
+  
+  // 同页面对话框互斥功能（保持启用）
+  SAME_PAGE_DIALOG_MUTEX: true,
+  
+  // 调试日志开关
+  DEBUG_LOGGING: true
+};
+
+// 弹窗状态管理
+let dialogState = {
+  isAnyDialogOpen: false,
+  currentDialogType: null, // 'save' | 'quickNote' | null
+  currentDialogId: null
+};
+
+// 弹窗位置管理
+let dialogPositions = {
+  save: { x: null, y: null },
+  quickNote: { x: null, y: null }
+};
+
+// 拖动状态
+let dragState = {
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+  startLeft: 0,
+  startTop: 0,
+  element: null
+};
+
+// 加载弹窗位置
+async function loadDialogPositions() {
+  try {
+    const result = await chrome.storage.local.get(['dialogPositions']);
+    if (result.dialogPositions) {
+      dialogPositions = { ...dialogPositions, ...result.dialogPositions };
+      console.log('📍 [位置管理] 已加载弹窗位置:', dialogPositions);
+    }
+  } catch (error) {
+    console.log('📍 [位置管理] 加载位置失败:', error);
+  }
+}
+
+// 保存弹窗位置
+async function saveDialogPosition(dialogType, x, y) {
+  try {
+    dialogPositions[dialogType] = { x, y };
+    await chrome.storage.local.set({ dialogPositions });
+    console.log(`📍 [位置管理] 已保存${dialogType}弹窗位置:`, { x, y });
+  } catch (error) {
+    console.log('📍 [位置管理] 保存位置失败:', error);
+  }
+}
+
+// 获取弹窗应该显示的位置
+function getDialogPosition(dialogType) {
+  const saved = dialogPositions[dialogType];
+  if (saved && saved.x !== null && saved.y !== null) {
+    // 检查位置是否在屏幕范围内
+    const maxX = window.innerWidth - 300; // 假设弹窗最小宽度300px
+    const maxY = window.innerHeight - 200; // 假设弹窗最小高度200px
+    
+    const x = Math.max(0, Math.min(saved.x, maxX));
+    const y = Math.max(0, Math.min(saved.y, maxY));
+    
+    console.log(`📍 [位置管理] 使用保存的${dialogType}位置:`, { x, y });
+    return { x, y };
+  }
+  
+  // 如果没有保存的位置，使用默认的居中位置
+  console.log(`📍 [位置管理] 使用默认${dialogType}位置: 居中`);
+  return null; // null表示使用CSS的居中定位
+}
+
+// 使弹窗可拖动
+function makeDraggable(dialogElement, dialogType) {
+  const header = dialogElement.querySelector('.drag-header');
+  if (!header) {
+    console.error('🚫 [拖动] 未找到拖动头部元素');
+    return;
+  }
+  
+  console.log(`🖱️ [拖动] 为${dialogType}弹窗启用拖动功能`);
+  
+  header.style.cursor = 'move';
+  
+  const startDrag = (e) => {
+    e.preventDefault();
+    
+    dragState.isDragging = true;
+    dragState.element = dialogElement.querySelector('.dialog-content');
+    dragState.startX = e.clientX;
+    dragState.startY = e.clientY;
+    
+    const rect = dragState.element.getBoundingClientRect();
+    dragState.startLeft = rect.left;
+    dragState.startTop = rect.top;
+    
+    // 切换到绝对定位
+    dragState.element.style.position = 'fixed';
+    dragState.element.style.transform = 'none';
+    dragState.element.style.left = dragState.startLeft + 'px';
+    dragState.element.style.top = dragState.startTop + 'px';
+    
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('mouseup', stopDrag);
+    
+    // 防止文本选择
+    document.body.style.userSelect = 'none';
+    
+    console.log(`🖱️ [拖动] 开始拖动${dialogType}弹窗`);
+  };
+  
+  const doDrag = (e) => {
+    if (!dragState.isDragging || !dragState.element) return;
+    
+    e.preventDefault();
+    
+    const deltaX = e.clientX - dragState.startX;
+    const deltaY = e.clientY - dragState.startY;
+    
+    let newLeft = dragState.startLeft + deltaX;
+    let newTop = dragState.startTop + deltaY;
+    
+    // 限制在屏幕范围内
+    const elementRect = dragState.element.getBoundingClientRect();
+    const maxLeft = window.innerWidth - elementRect.width;
+    const maxTop = window.innerHeight - elementRect.height;
+    
+    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+    newTop = Math.max(0, Math.min(newTop, maxTop));
+    
+    dragState.element.style.left = newLeft + 'px';
+    dragState.element.style.top = newTop + 'px';
+  };
+  
+  const stopDrag = (e) => {
+    if (!dragState.isDragging) return;
+    
+    dragState.isDragging = false;
+    
+    // 保存新位置
+    if (dragState.element) {
+      const rect = dragState.element.getBoundingClientRect();
+      saveDialogPosition(dialogType, rect.left, rect.top);
+    }
+    
+    document.removeEventListener('mousemove', doDrag);
+    document.removeEventListener('mouseup', stopDrag);
+    
+    // 恢复文本选择
+    document.body.style.userSelect = '';
+    
+    dragState.element = null;
+    
+    console.log(`🖱️ [拖动] 停止拖动${dialogType}弹窗`);
+  };
+  
+  header.addEventListener('mousedown', startDrag);
+}
+
+// 创建关闭按钮
+function createCloseButton(onClose) {
+  return `
+    <button class="dialog-close-btn" style="
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #666;
+      transition: all 0.2s ease;
+      z-index: 1;
+    " onmouseover="this.style.background='#f0f0f0'; this.style.color='#333';" onmouseout="this.style.background='transparent'; this.style.color='#666';">
+      ✕
+    </button>
+  `;
+}
+
 // 初始化本地化文本
 async function initI18nTexts() {
   try {
@@ -20,21 +212,124 @@ function getI18nText(key, defaultText = '') {
   return i18nTexts[key] || defaultText;
 }
 
+// 检查是否可以打开新弹窗
+function canOpenDialog(dialogType) {
+  if (FEATURE_FLAGS.DEBUG_LOGGING) {
+    console.log(`🔍 [对话框检查] 检查是否可以打开 ${dialogType}，当前状态:`, dialogState);
+  }
+  
+  // 如果同页面互斥功能被禁用，总是允许打开
+  if (!FEATURE_FLAGS.SAME_PAGE_DIALOG_MUTEX) {
+    return { canOpen: true };
+  }
+  
+  // 检查是否有其他对话框已经打开
+  if (dialogState.isAnyDialogOpen) {
+    if (dialogState.currentDialogType === dialogType) {
+      // 相同类型的对话框已经打开
+      return {
+        canOpen: false,
+        reason: `${dialogType === 'save' ? '保存' : '快速笔记'}对话框已经打开`,
+        isSilent: dialogType === 'quickNote' // Quick Note重复调用时静默处理
+      };
+    } else {
+      // 不同类型的对话框已经打开
+      return {
+        canOpen: false,
+        reason: `无法打开${dialogType === 'save' ? '保存' : '快速笔记'}对话框：${dialogState.currentDialogType === 'save' ? '保存' : '快速笔记'}对话框正在使用中`,
+        isSilent: false
+      };
+    }
+  }
+  
+  return { canOpen: true };
+}
+
+// 设置弹窗状态
+function setDialogState(isOpen, dialogType = null, dialogId = null) {
+  console.log(`🔄 [弹窗状态] 更新状态: isOpen=${isOpen}, type=${dialogType}, id=${dialogId}`);
+  dialogState.isAnyDialogOpen = isOpen;
+  dialogState.currentDialogType = dialogType;
+  dialogState.currentDialogId = dialogId;
+  
+  // 更新全局弹窗状态（跨标签页）
+  updateGlobalDialogState(isOpen, dialogType);
+  
+  // 更新右键菜单状态
+  updateContextMenuState();
+}
+
+// 更新全局弹窗状态
+function updateGlobalDialogState(isOpen, dialogType) {
+  // 通知background script更新全局弹窗状态
+  chrome.runtime.sendMessage({
+    action: "updateGlobalDialogState",
+    isOpen: isOpen,
+    dialogType: dialogType
+  }).catch(error => {
+    console.log('更新全局弹窗状态失败:', error);
+  });
+}
+
+// 更新右键菜单状态
+function updateContextMenuState() {
+  // 通知background script更新右键菜单状态
+  chrome.runtime.sendMessage({
+    action: "updateContextMenuState",
+    disabled: dialogState.isAnyDialogOpen,
+    dialogType: dialogState.currentDialogType
+  }).catch(error => {
+    console.log('更新右键菜单状态失败:', error);
+  });
+}
+
 // 监听来自后台脚本的消息
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   if (request.action === "saveToNotion") {
+    // 检查是否可以打开Save Note对话框
+    const checkResult = canOpenDialog('save');
+    if (!checkResult.canOpen) {
+      if (!checkResult.isSilent) {
+        showNotification(checkResult.reason, 'warning');
+      } else if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🔇 [消息] 静默忽略保存对话框调用');
+      }
+      return;
+    }
+    
     await initI18nTexts(); // 每次显示对话框前获取最新的本地化文本
     await showSaveDialog(request.data);
   } else if (request.action === "showQuickNote") {
+    // 检查是否可以打开Quick Note对话框
+    const checkResult = canOpenDialog('quickNote');
+    if (!checkResult.canOpen) {
+      if (!checkResult.isSilent) {
+        showNotification(checkResult.reason, 'warning');
+      } else if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🔇 [消息] 静默忽略快速笔记对话框调用');
+      }
+      return;
+    }
+    
     await initI18nTexts(); // 每次显示对话框前获取最新的本地化文本
     await showQuickNoteDialog(request.data);
   } else if (request.action === "showError") {
     showNotification(request.message, 'error');
+  } else if (request.action === "showPhoebeWorkingNotification") {
+    showPhoebeWorkingNotification(request.message);
+  } else if (request.action === "showPhoebeWorkingNotificationWithJump") {
+    showPhoebeWorkingNotificationWithJump(request.message, request.activeTabId, request.activeTabTitle, request.activeTabUrl);
   }
 });
 
 // 显示保存对话框
 async function showSaveDialog(data) {
+  // 设置弹窗状态为打开
+  setDialogState(true, 'save', 'notion-save-dialog');
+  
+  // 加载弹窗位置
+  await loadDialogPositions();
+  
   // 先获取配置以确定对话框类型
   const config = await chrome.storage.sync.get(['mode', 'targetPageId', 'targetDatabaseId', 'databaseId']);
   const mode = config.mode || 'database'; // 默认数据库模式，兼容旧配置
@@ -44,6 +339,12 @@ async function showSaveDialog(data) {
   // 创建对话框
   const dialog = document.createElement('div');
   dialog.id = 'notion-save-dialog';
+  
+  // 获取弹窗位置
+  const position = getDialogPosition('save');
+  const positionStyle = position 
+    ? `left: ${position.x}px; top: ${position.y}px; transform: none;`
+    : `top: 50%; left: 50%; transform: translate(-50%, -50%);`;
   
   // 根据模式生成不同的页面选择区域
   let pageSelectionHtml = '';
@@ -104,11 +405,9 @@ async function showSaveDialog(data) {
   }
   
   dialog.innerHTML = `
-    <div style="
+    <div class="dialog-content" style="
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      ${positionStyle}
       background: white;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -118,10 +417,22 @@ async function showSaveDialog(data) {
       width: 480px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     ">
-      <h3 style="margin: 0 0 15px 0; color: #333 !important; display: flex; align-items: center; gap: 8px; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important; font-weight: 600 !important; font-size: 18px !important;">
-        <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
-        ${getI18nText('saveDialogTitle', '保存到Notion')}
-      </h3>
+      ${createCloseButton()}
+      
+      <div class="drag-header" style="
+        margin: -20px -20px 15px -20px;
+        padding: 15px 20px;
+        border-radius: 8px 8px 0 0;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        cursor: move;
+        user-select: none;
+      ">
+        <h3 style="margin: 0; color: #333 !important; display: flex; align-items: center; gap: 8px; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: move !important; font-weight: 600 !important; font-size: 18px !important;">
+          <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
+          ${getI18nText('saveDialogTitle', '保存笔记')}
+        </h3>
+      </div>
       
       ${pageSelectionHtml}
       
@@ -201,7 +512,7 @@ async function showSaveDialog(data) {
             width: 100%;
             font-size: 14px;
             background: transparent;
-          ">
+          " autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         </div>
         <div id="tag-suggestions" style="
           max-height: 120px;
@@ -210,6 +521,10 @@ async function showSaveDialog(data) {
           border-top: none;
           background: white;
           display: none;
+          border-radius: 0 0 4px 4px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          z-index: 1000;
+          position: relative;
         "></div>
       </div>
       
@@ -246,6 +561,18 @@ async function showSaveDialog(data) {
   `;
   
   document.body.appendChild(dialog);
+  
+  // 启用拖动功能
+  makeDraggable(dialog, 'save');
+  
+  // 绑定关闭按钮事件
+  const closeBtn = dialog.querySelector('.dialog-close-btn');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      setDialogState(false);
+      document.body.removeChild(dialog);
+    };
+  }
   
   // 强制修复所有可能被页面CSS影响的元素样式
   setTimeout(() => {
@@ -338,7 +665,7 @@ async function showSaveDialog(data) {
   }
   
   // 初始化标签管理（总是需要）
-  initTagManagement();
+  await initTagManagement();
   
   // 只在数据库模式下初始化页面选择
   if (mode === 'database') {
@@ -411,7 +738,7 @@ async function showSaveDialog(data) {
         });
       }
       
-      showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
+      showNotification(getI18nText('saveSuccess', '笔记保存成功!'), 'success');
     } else {
       const errorMsg = response && response.error ? response.error : getI18nText('errorNetwork', '未知错误，请检查网络连接');
       throw new Error(errorMsg);
@@ -420,6 +747,8 @@ async function showSaveDialog(data) {
   
   // 绑定事件
   document.getElementById('notion-cancel').onclick = () => {
+    // 清除弹窗状态
+    setDialogState(false);
     document.body.removeChild(dialog);
   };
   
@@ -458,6 +787,8 @@ async function showSaveDialog(data) {
   
   // 点击背景关闭
   dialog.children[1].onclick = () => {
+    // 清除弹窗状态
+    setDialogState(false);
     document.body.removeChild(dialog);
   };
 }
@@ -845,11 +1176,27 @@ function disableDialogButtons(disable) {
 // 显示通知
 function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
+  
+  let backgroundColor;
+  switch (type) {
+    case 'success':
+      backgroundColor = '#4CAF50';
+      break;
+    case 'error':
+      backgroundColor = '#f44336';
+      break;
+    case 'warning':
+      backgroundColor = '#ff9800';
+      break;
+    default:
+      backgroundColor = '#2196F3';
+  }
+  
   notification.style.cssText = `
     position: fixed;
     top: 20px;
     right: 20px;
-    background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+    background: ${backgroundColor};
     color: white;
     padding: 12px 20px;
     border-radius: 4px;
@@ -870,35 +1217,259 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
+// 显示"Phoebe正忙碌中"风格的通知
+function showPhoebeWorkingNotification(message) {
+  // 获取正确的图标URL
+  const iconUrl = chrome.runtime.getURL('icons/icon48.png');
+  
+  const notification = document.createElement('div');
+  notification.id = 'phoebe-working-notification';
+  notification.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10002;
+      width: 350px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      text-align: center;
+    ">
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+        <img src="${iconUrl}" style="width: 24px; height: 24px; margin-right: 8px;">
+        <h3 style="margin: 0; color: #333; font-size: 16px;">${getI18nText('phoebeWorking', 'Phoebe正在工作中')}</h3>
+      </div>
+      
+      <div style="
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f0f0f0;
+        border-top: 3px solid #0066cc;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px auto;
+      "></div>
+      
+      <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.4;">
+        ${message}
+      </p>
+      
+      <button onclick="this.parentElement.parentElement.remove()" style="
+        margin-top: 15px;
+        padding: 8px 16px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      ">${getI18nText('buttonOK', '好的')}</button>
+    </div>
+    
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 10001;
+    "></div>
+    
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // 3秒后自动关闭（如果用户没有点击按钮）
+  setTimeout(() => {
+    if (notification.parentNode) {
+      document.body.removeChild(notification);
+    }
+  }, 5000);
+}
+
+// 显示带标签页跳转功能的"Phoebe正忙碌中"通知
+function showPhoebeWorkingNotificationWithJump(message, activeTabId, activeTabTitle, activeTabUrl) {
+  // 获取正确的图标URL
+  const iconUrl = chrome.runtime.getURL('icons/icon48.png');
+  
+  const shortTabTitle = activeTabTitle && activeTabTitle.length > 25 
+    ? activeTabTitle.substring(0, 25) + '...' 
+    : (activeTabTitle || '未知页面');
+  
+  const notification = document.createElement('div');
+  notification.id = 'phoebe-working-notification-with-jump';
+  notification.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10002;
+      width: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      text-align: center;
+    ">
+      <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+        <img src="${iconUrl}" style="width: 24px; height: 24px; margin-right: 8px;">
+        <h3 style="margin: 0; color: #333; font-size: 16px;">${getI18nText('phoebeWorking', 'Phoebe正在工作中')}</h3>
+      </div>
+      
+      <div style="
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f0f0f0;
+        border-top: 3px solid #0066cc;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px auto;
+      "></div>
+      
+      <p style="margin: 0 0 15px 0; color: #666; font-size: 14px; line-height: 1.4;">
+        ${message}
+      </p>
+      
+      <div style="
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 15px;
+        text-align: left;
+      ">
+        <div style="font-size: 12px; color: #6c757d; margin-bottom: 4px;">${getI18nText('clickToJump', '点击下方链接跳转到活动标签页：')}</div>
+        <button id="jump-to-tab-link" style="
+          background: none;
+          border: none;
+          color: #0066cc;
+          text-decoration: underline;
+          cursor: pointer;
+          font-size: 14px;
+          padding: 0;
+          font-family: inherit;
+          max-width: 100%;
+          word-break: break-all;
+          text-align: left;
+        " title="${activeTabTitle}">📄 ${shortTabTitle}</button>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button id="close-notification" style="
+          padding: 8px 16px;
+          background: #f0f0f0;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        ">${getI18nText('buttonCancel', '取消')}</button>
+        <button id="jump-to-tab" style="
+          padding: 8px 16px;
+          background: #0066cc;
+          color: white;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+        ">${getI18nText('jumpToActiveTab', '跳转到活动标签页')}</button>
+      </div>
+    </div>
+    
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 10001;
+    "></div>
+    
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // 绑定跳转事件
+  const jumpToTabLink = notification.querySelector('#jump-to-tab-link');
+  const jumpToTabBtn = notification.querySelector('#jump-to-tab');
+  const closeBtn = notification.querySelector('#close-notification');
+  
+  const jumpToTab = () => {
+    if (activeTabId) {
+      // 使用Chrome API跳转到指定标签页
+      chrome.runtime.sendMessage({
+        action: "switchToTab",
+        tabId: activeTabId
+      });
+    }
+  };
+  
+  const closeNotification = () => {
+    if (notification.parentNode) {
+      document.body.removeChild(notification);
+    }
+  };
+  
+  jumpToTabLink.addEventListener('click', jumpToTab);
+  jumpToTabBtn.addEventListener('click', jumpToTab);
+  closeBtn.addEventListener('click', closeNotification);
+  
+  // 点击背景关闭
+  notification.children[1].addEventListener('click', closeNotification);
+  
+  // 5秒后自动关闭
+  setTimeout(closeNotification, 8000);
+}
+
 // 标签管理功能
 let selectedTags = [];
 let allTags = [];
+let isLoadingTags = false;
 
 async function initTagManagement() {
-  // 获取标签历史
-  try {
-    // 检查background script是否可用
-    if (chrome.runtime && chrome.runtime.id) {
-      const response = await chrome.runtime.sendMessage({
-        action: "getTagHistory"
-      });
-      // 修复：从response.tags中获取标签数组
-      allTags = (response && response.success && response.tags) ? response.tags : [];
-      console.log('已加载标签历史:', allTags);
-    } else {
-      console.log('Background script未初始化，跳过标签历史加载');
-      allTags = [];
-    }
-  } catch (error) {
-    console.log('获取标签历史失败:', error);
-    allTags = [];
-  }
+  // 重置选中的标签
+  selectedTags = [];
+  
+  // 每次初始化都重新获取最新的标签历史
+  await loadTagHistory();
   
   const tagInput = document.getElementById('notion-tag-input');
   const tagContainer = document.getElementById('notion-tags-container');
   const suggestions = document.getElementById('tag-suggestions');
   
-  // 输入框事件
+  if (!tagInput || !tagContainer || !suggestions) {
+    console.log('标签管理元素未找到，跳过初始化');
+    return;
+  }
+  
+  // 清除之前的事件监听器（防止重复绑定）
+  tagInput.removeEventListener('input', handleTagInput);
+  tagInput.removeEventListener('keydown', handleTagKeydown);
+  tagInput.removeEventListener('focus', showSuggestions);
+  tagInput.removeEventListener('blur', hideSuggestionsDelayed);
+  
+  // 绑定事件监听器
   tagInput.addEventListener('input', handleTagInput);
   tagInput.addEventListener('keydown', handleTagKeydown);
   tagInput.addEventListener('focus', showSuggestions);
@@ -906,6 +1477,58 @@ async function initTagManagement() {
   
   // 容器点击聚焦到输入框
   tagContainer.addEventListener('click', () => tagInput.focus());
+  
+  // 初始渲染
+  renderSelectedTags();
+  
+  if (FEATURE_FLAGS.DEBUG_LOGGING) {
+    console.log('✅ [标签管理] 初始化完成，已加载', allTags.length, '个历史标签');
+  }
+}
+
+async function loadTagHistory() {
+  if (isLoadingTags) {
+    if (FEATURE_FLAGS.DEBUG_LOGGING) {
+      console.log('🔄 [标签加载] 正在加载中，跳过重复请求');
+    }
+    return;
+  }
+  
+  isLoadingTags = true;
+  
+  try {
+    // 检查background script是否可用
+    if (!chrome.runtime || !chrome.runtime.id) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('⚠️ [标签加载] Background script未初始化，使用空标签列表');
+      }
+      allTags = [];
+      return;
+    }
+    
+    const response = await chrome.runtime.sendMessage({
+      action: "getTagHistory"
+    });
+    
+    if (response && response.success && Array.isArray(response.tags)) {
+      allTags = response.tags;
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('✅ [标签加载] 成功加载', allTags.length, '个历史标签:', allTags);
+      }
+    } else {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('⚠️ [标签加载] 无效响应，使用空标签列表:', response);
+      }
+      allTags = [];
+    }
+  } catch (error) {
+    if (FEATURE_FLAGS.DEBUG_LOGGING) {
+      console.log('❌ [标签加载] 获取标签历史失败:', error);
+    }
+    allTags = [];
+  } finally {
+    isLoadingTags = false;
+  }
 }
 
 function handleTagInput(event) {
@@ -1145,7 +1768,7 @@ async function showSaveLoading() {
       "></div>
       
       <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.4;">
-        ${getI18nText('savingToNotion', '正在保存到Notion中...<br>请稍等片刻 ✨')}
+        ${getI18nText('savingToNotion', '正在保存笔记...<br>请稍等片刻 ✨')}
       </p>
     </div>
     
@@ -1181,6 +1804,9 @@ function hideSaveLoading() {
 // 关闭对话框
 function closeDialog() {
   console.log('🚪 [对话框] 开始关闭对话框');
+  
+  // 清除弹窗状态
+  setDialogState(false);
   
   // 清理所有可能的验证错误提示
   const errorElements = document.querySelectorAll('[id$="-error"]');
@@ -1223,6 +1849,12 @@ function closeDialog() {
 
 // 显示快速笔记对话框
 async function showQuickNoteDialog(data) {
+  // 设置弹窗状态为打开
+  setDialogState(true, 'quickNote', 'notion-quick-note-dialog');
+  
+  // 加载弹窗位置
+  await loadDialogPositions();
+  
   // 获取完整配置，包括notionToken
   const config = await chrome.storage.sync.get(['mode', 'targetPageId', 'targetDatabaseId', 'databaseId', 'notionToken']);
   const mode = config.mode || 'database'; // 默认数据库模式，兼容旧配置
@@ -1232,6 +1864,12 @@ async function showQuickNoteDialog(data) {
   // 创建对话框
   const dialog = document.createElement('div');
   dialog.id = 'notion-quick-note-dialog';
+  
+  // 获取弹窗位置
+  const position = getDialogPosition('quickNote');
+  const positionStyle = position 
+    ? `left: ${position.x}px; top: ${position.y}px; transform: none;`
+    : `top: 50%; left: 50%; transform: translate(-50%, -50%);`;
   
   // 根据模式生成不同的页面选择区域
   let pageSelectionHtml = '';
@@ -1284,11 +1922,9 @@ async function showQuickNoteDialog(data) {
   }
   
   dialog.innerHTML = `
-    <div style="
+    <div class="dialog-content" style="
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      ${positionStyle}
       background: white;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -1298,10 +1934,22 @@ async function showQuickNoteDialog(data) {
       width: 450px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     ">
-      <h3 style="margin: 0 0 15px 0; color: #333 !important; display: flex; align-items: center; gap: 8px; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: default !important; font-weight: 600 !important; font-size: 18px !important;">
-        <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
-        ${getI18nText('quickNoteTitle', '快速笔记')}
-      </h3>
+      ${createCloseButton()}
+      
+      <div class="drag-header" style="
+        margin: -20px -20px 15px -20px;
+        padding: 15px 20px;
+        border-radius: 8px 8px 0 0;
+        background: #f0f8ff;
+        border-bottom: 1px solid #b3d9ff;
+        cursor: move;
+        user-select: none;
+      ">
+        <h3 style="margin: 0; color: #333 !important; display: flex; align-items: center; gap: 8px; text-decoration: none !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; font-style: normal !important; text-transform: none !important; letter-spacing: normal !important; text-shadow: none !important; cursor: move !important; font-weight: 600 !important; font-size: 18px !important;">
+          <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
+          ${getI18nText('quickNoteTitle', '快速笔记')}
+        </h3>
+      </div>
       
       ${pageSelectionHtml}
       
@@ -1342,7 +1990,7 @@ async function showQuickNoteDialog(data) {
             width: 100%;
             font-size: 14px;
             background: transparent;
-          ">
+          " autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         </div>
         <div id="tag-suggestions" style="
           max-height: 120px;
@@ -1351,6 +1999,10 @@ async function showQuickNoteDialog(data) {
           border-top: none;
           background: white;
           display: none;
+          border-radius: 0 0 4px 4px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          z-index: 1000;
+          position: relative;
         "></div>
       </div>
       
@@ -1378,6 +2030,18 @@ async function showQuickNoteDialog(data) {
 
   // 添加到页面
   document.body.appendChild(dialog);
+  
+  // 启用拖动功能
+  makeDraggable(dialog, 'quickNote');
+  
+  // 绑定关闭按钮事件
+  const closeBtn = dialog.querySelector('.dialog-close-btn');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      setDialogState(false);
+      document.body.removeChild(dialog);
+    };
+  }
   
   // 聚焦到笔记输入框
   const noteTextarea = document.getElementById('notion-note');
@@ -1449,7 +2113,7 @@ async function showQuickNoteDialog(data) {
         });
         
         if (response && response.success) {
-          showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
+          showNotification(getI18nText('saveSuccess', '笔记保存成功!'), 'success');
           setTimeout(closeDialog, 1500);
         } else {
           throw new Error(response?.error || getI18nText('errorNetwork', '未知错误'));
@@ -1512,7 +2176,7 @@ async function showQuickNoteDialog(data) {
         });
         
         if (response && response.success) {
-          showNotification(getI18nText('saveSuccess', '成功保存到Notion!'), 'success');
+          showNotification(getI18nText('saveSuccess', '笔记保存成功!'), 'success');
           setTimeout(closeDialog, 1500);
         } else {
           throw new Error(response?.error || getI18nText('errorNetwork', '未知错误'));
@@ -1536,7 +2200,7 @@ async function showQuickNoteDialog(data) {
     }
   }
   
-  // 初始化标签管理
+  // 初始化标签管理（总是需要）
   await initTagManagement();
   console.log('✅ [快速笔记] 快速笔记对话框初始化完成');
 }
@@ -1778,7 +2442,7 @@ function createIsolatedDialog(data) {
     <div class="dialog">
       <h3>
         <img src="${chrome.runtime.getURL('icons/icon48.png')}" style="width: 20px; height: 20px;" alt="Phoebe">
-        保存到Notion
+        保存笔记
       </h3>
       
       <div style="margin-bottom: 15px;">
@@ -1809,7 +2473,119 @@ function createIsolatedDialog(data) {
   });
   
   document.body.appendChild(shadowHost);
+  
+  return { dialog: shadowHost, close };
 }
 
-// 使用说明：在遇到严重CSS冲突时，可以调用此函数替代原有的showSaveDialog
-// createIsolatedDialog(data);
+// 页面卸载时清理全局状态
+// 这确保了当标签页关闭、刷新或导航到其他页面时，全局状态会被正确清理
+window.addEventListener('beforeunload', () => {
+  if (FEATURE_FLAGS.DEBUG_LOGGING) {
+    console.log('🚪 [页面卸载] 页面即将卸载，清理弹窗状态');
+  }
+  
+  // 如果当前页面有活动的对话框，清理全局状态
+  if (dialogState.isAnyDialogOpen) {
+    if (FEATURE_FLAGS.DEBUG_LOGGING) {
+      console.log('🧹 [页面卸载] 检测到活动对话框，发送清理信号');
+    }
+    
+    // 无论功能开关如何，都要清理本地状态
+    try {
+      chrome.runtime.sendMessage({
+        action: "updateGlobalDialogState",
+        isOpen: false,
+        dialogType: null
+      });
+    } catch (error) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('页面卸载时清理状态失败:', error);
+      }
+    }
+  }
+});
+
+// 页面可见性变化时检查状态一致性
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (FEATURE_FLAGS.DEBUG_LOGGING) {
+      console.log('🔍 [可见性] 页面变为可见，检查对话框状态');
+    }
+    
+    // 页面变为可见时，检查是否有孤立的对话框元素
+    const saveDialog = document.getElementById('notion-save-dialog');
+    const quickNoteDialog = document.getElementById('notion-quick-note-dialog');
+    
+    if ((saveDialog || quickNoteDialog) && !dialogState.isAnyDialogOpen) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('⚠️ [可见性] 发现孤立的对话框元素，清理');
+      }
+      if (saveDialog && saveDialog.parentNode) {
+        document.body.removeChild(saveDialog);
+      }
+      if (quickNoteDialog && quickNoteDialog.parentNode) {
+        document.body.removeChild(quickNoteDialog);
+      }
+    } else if (dialogState.isAnyDialogOpen && !saveDialog && !quickNoteDialog) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('⚠️ [可见性] 状态显示有对话框但DOM中不存在，清理状态');
+      }
+      setDialogState(false);
+    }
+  }
+});
+
+// 监听DOM变化，检测对话框被外部删除的情况
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.type === 'childList' && dialogState.isAnyDialogOpen) {
+      mutation.removedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          // 检查被删除的节点是否是我们的对话框
+          if (node.id === 'notion-save-dialog' || node.id === 'notion-quick-note-dialog') {
+            if (FEATURE_FLAGS.DEBUG_LOGGING) {
+              console.log('🔍 [DOM观察] 检测到对话框被外部删除:', node.id);
+            }
+            setDialogState(false);
+          } else if (node.querySelector && 
+                     (node.querySelector('#notion-save-dialog') || node.querySelector('#notion-quick-note-dialog'))) {
+            if (FEATURE_FLAGS.DEBUG_LOGGING) {
+              console.log('🔍 [DOM观察] 检测到包含对话框的容器被删除');
+            }
+            setDialogState(false);
+          }
+        }
+      });
+    }
+  });
+});
+
+// 开始观察DOM变化
+observer.observe(document.body, {
+  childList: true,
+  subtree: true
+});
+
+if (FEATURE_FLAGS.DEBUG_LOGGING) {
+  console.log('✅ [初始化] Content script加载完成，已设置状态清理监听器');
+  console.log('🔧 [配置] 跨页面互斥:', FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX, '同页面互斥:', FEATURE_FLAGS.SAME_PAGE_DIALOG_MUTEX);
+}
+
+// 页面加载时初始化弹窗状态
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('🔄 [弹窗状态] 页面加载，初始化弹窗状态');
+  setDialogState(false);
+  await loadDialogPositions();
+});
+
+// 如果DOMContentLoaded已经触发，立即初始化
+if (document.readyState === 'loading') {
+  // 页面还在加载中，等待DOMContentLoaded事件
+} else {
+  // DOM已经加载完成，立即初始化
+  console.log('🔄 [弹窗状态] DOM已加载，立即初始化弹窗状态');
+  (async () => {
+    setDialogState(false);
+    await loadDialogPositions();
+  })();
+}

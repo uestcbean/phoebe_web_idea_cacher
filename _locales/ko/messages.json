@@ -6,7 +6,7 @@
     "message": "선택한 텍스트를 Notion 페이지에 빠르게 추가"
   },
   "contextMenuSave": {
-    "message": "Notion에 저장"
+    "message": "노트에 저장"
   },
   "popupTitle": {
     "message": "Phoebe"
@@ -48,7 +48,7 @@
     "message": "웹페이지에서 텍스트 선택"
   },
   "usageStep2": {
-    "message": "우클릭하여 \"Notion에 저장\" 선택"
+    "message": "우클릭하여 \"노트에 저장\" 선택"
   },
   "usageStep3": {
     "message": "메모와 태그 추가 (선택사항)"
@@ -66,7 +66,7 @@
     "message": "통계 정보 로딩 중..."
   },
   "saveDialogTitle": {
-    "message": "Notion에 저장"
+    "message": "노트에 저장"
   },
   "saveDialogContent": {
     "message": "선택된 콘텐츠:"
@@ -93,7 +93,7 @@
     "message": "저장 중..."
   },
   "saveSuccess": {
-    "message": "Notion에 성공적으로 저장되었습니다!"
+    "message": "노트에 성공적으로 저장되었습니다!"
   },
   "saveFailed": {
     "message": "저장 실패"
@@ -277,7 +277,7 @@
     "message": "Phoebe가 저장 중"
   },
   "savingToNotion": {
-    "message": "Notion에 저장하는 중입니다...<br>잠시만 기다려주세요 ✨"
+    "message": "노트에 저장하는 중입니다...<br>잠시만 기다려주세요 ✨"
   },
   "pageCreatedSuccess": {
     "message": "새 페이지 \\\"$PAGE$\\\"가 생성되었습니다",
@@ -519,5 +519,29 @@
   },
   "buttonConfirm": {
     "message": "확인"
+  },
+  "saveDialogAlreadyOpen": {
+    "message": "저장 대화상자가 이미 열려있습니다. 먼저 닫아주세요"
+  },
+  "quickNoteDialogAlreadyOpen": {
+    "message": "빠른 메모 대화상자가 이미 열려있습니다. 먼저 닫아주세요"
+  },
+  "dialogAlreadyOpen": {
+    "message": "대화상자가 이미 열려있습니다. 먼저 닫아주세요"
+  },
+  "contextMenuDisabled": {
+    "message": "노트에 저장 (대화상자 열림)"
+  },
+  "contextMenuDisabledSave": {
+    "message": "노트에 저장 (저장 대화상자 열림)"
+  },
+  "contextMenuDisabledQuickNote": {
+    "message": "노트에 저장 (빠른 메모 열림)"
+  },
+  "quickNoteDisabled": {
+    "message": "빠른 메모 기능이 제한되었습니다: 다른 대화상자가 사용 중입니다"
+  },
+  "quickNoteDisabledSaveOpen": {
+    "message": "빠른 메모 기능이 제한되었습니다: 저장 대화상자가 사용 중입니다"
   }
 } 

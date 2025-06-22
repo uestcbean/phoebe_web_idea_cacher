@@ -84,7 +84,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 ## [1.0.0]
 
 ### Hinzugefügt (Added)
-- 📝 **Grundlegende Inhaltssammlung**: Webseitentext auswählen und per Rechtsklick in Notion speichern
+- 📝 **Grundlegende Inhaltssammlung**: Webseitentext auswählen und per Rechtsklick in Notizen speichern
 - 🏷️ **Tag-Management-System**: Unterstützung für das Hinzufügen und Verwalten von Tags
 - 🌍 **Mehrsprachige Benutzeroberfläche**: Anfängliche Unterstützung für Chinesisch und Englisch
 - ⚙️ **Notion-API-Integration**: Grundlegende API-Verbindung und Authentifizierung

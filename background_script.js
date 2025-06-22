@@ -1,11 +1,467 @@
+// 功能开关配置
+const FEATURE_FLAGS = {
+  // 跨页面对话框互斥功能（可以通过这个开关快速启用/禁用）
+  CROSS_TAB_DIALOG_MUTEX: false, // 设为 false 暂时禁用跨页面互斥
+  
+  // 同页面对话框互斥功能（保持启用）
+  SAME_PAGE_DIALOG_MUTEX: true,
+  
+  // 调试日志开关
+  DEBUG_LOGGING: true
+};
+
 // 创建右键菜单
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "saveToNotion",
-    title: chrome.i18n.getMessage('contextMenuSave') || "保存到Notion",
+    title: chrome.i18n.getMessage('contextMenuSave') || "保存笔记",
     contexts: ["selection"]
   });
+  
+  // 初始化时清理全局状态（防止扩展重启后状态不一致）
+  initializeGlobalDialogState();
 });
+
+// 右键菜单状态管理
+let contextMenuState = {
+  disabled: false,
+  currentDialogType: null
+};
+
+// 全局弹窗状态管理（跨标签页）- 现在使用持久化存储
+let globalDialogState = {
+  isAnyDialogOpen: false,
+  currentDialogType: null, // 'save' | 'quickNote' | null
+  activeTabId: null,
+  activeTabTitle: null,
+  activeTabUrl: null
+};
+
+// 添加超时保护：如果对话框状态持续太久，自动清理
+let dialogTimeoutId = null;
+
+// 扩展启动时立即初始化状态（无论是首次安装还是重新启动）
+// 这确保了在任何情况下都会恢复全局状态
+(async () => {
+  try {
+    console.log('🌐 [立即初始化] 背景脚本启动，初始化全局状态');
+    await initializeGlobalDialogState();
+  } catch (error) {
+    console.error('🌐 [立即初始化] 初始化失败:', error);
+  }
+})();
+
+// 初始化全局弹窗状态
+async function initializeGlobalDialogState() {
+  try {
+    // 如果跨页面互斥功能被禁用，只进行简单初始化
+    if (!FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🌐 [启动] 跨页面互斥功能已禁用，使用简单初始化');
+      }
+      globalDialogState = {
+        isAnyDialogOpen: false,
+        currentDialogType: null,
+        activeTabId: null,
+        activeTabTitle: null,
+        activeTabUrl: null
+      };
+      return;
+    }
+    
+    // 从Chrome存储中恢复状态
+    const stored = await chrome.storage.local.get(['globalDialogState']);
+    if (stored.globalDialogState) {
+      globalDialogState = { ...globalDialogState, ...stored.globalDialogState };
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🌐 [启动] 恢复全局弹窗状态:', globalDialogState);
+      }
+      
+      // 验证恢复的标签页是否仍然有效
+      if (globalDialogState.activeTabId) {
+        try {
+          await chrome.tabs.get(globalDialogState.activeTabId);
+          if (FEATURE_FLAGS.DEBUG_LOGGING) {
+            console.log('🌐 [启动] 活动标签页仍然有效:', globalDialogState.activeTabId);
+          }
+        } catch (error) {
+          if (FEATURE_FLAGS.DEBUG_LOGGING) {
+            console.log('🌐 [启动] 活动标签页已失效，清理状态:', globalDialogState.activeTabId);
+          }
+          // 标签页不存在，清理状态
+          await clearGlobalDialogState();
+        }
+      }
+    } else {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🌐 [启动] 未找到存储的全局状态，使用默认状态');
+      }
+      // 确保存储中有初始状态
+      await saveGlobalDialogState();
+    }
+  } catch (error) {
+    console.error('🌐 [启动] 初始化全局状态失败:', error);
+    // 出错时清理状态
+    await clearGlobalDialogState();
+  }
+}
+
+// 保存全局弹窗状态到Chrome存储
+async function saveGlobalDialogState() {
+  try {
+    await chrome.storage.local.set({ globalDialogState: globalDialogState });
+    console.log('🌐 [存储] 保存全局弹窗状态:', globalDialogState);
+  } catch (error) {
+    console.error('🌐 [存储] 保存全局状态失败:', error);
+  }
+}
+
+// 清理全局弹窗状态
+async function clearGlobalDialogState() {
+  // 清除超时定时器
+  if (dialogTimeoutId) {
+    clearTimeout(dialogTimeoutId);
+    dialogTimeoutId = null;
+    console.log('⏰ [清理] 已清除对话框超时定时器');
+  }
+  
+  globalDialogState = {
+    isAnyDialogOpen: false,
+    currentDialogType: null,
+    activeTabId: null,
+    activeTabTitle: null,
+    activeTabUrl: null
+  };
+  await saveGlobalDialogState();
+  console.log('🌐 [清理] 全局弹窗状态已清理');
+}
+
+// 更新全局弹窗状态
+async function updateGlobalDialogState(isOpen, dialogType = null, tabId = null, tabTitle = null, tabUrl = null) {
+  globalDialogState.isAnyDialogOpen = isOpen;
+  globalDialogState.currentDialogType = dialogType;
+  globalDialogState.activeTabId = tabId;
+  globalDialogState.activeTabTitle = tabTitle;
+  globalDialogState.activeTabUrl = tabUrl;
+  
+  // 只有在跨页面互斥功能启用时才持久化到存储
+  if (FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX) {
+    await saveGlobalDialogState();
+  }
+  
+  if (FEATURE_FLAGS.DEBUG_LOGGING) {
+    console.log('🌐 [全局状态] 更新弹窗状态:', {
+      isOpen,
+      dialogType,
+      tabId,
+      tabTitle: tabTitle?.substring(0, 50) + (tabTitle?.length > 50 ? '...' : ''),
+      tabUrl: tabUrl?.substring(0, 100) + (tabUrl?.length > 100 ? '...' : ''),
+      persistToStorage: FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX
+    });
+  }
+}
+
+// 启动时初始化状态
+chrome.runtime.onStartup.addListener(() => {
+  console.log('🌐 [启动] Chrome扩展启动，初始化全局状态');
+  initializeGlobalDialogState();
+});
+
+// 标签页关闭时清理相关状态
+chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
+  // 只有在跨页面互斥功能启用时才处理
+  if (!FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX) {
+    return;
+  }
+  
+  if (globalDialogState.activeTabId === tabId) {
+    if (FEATURE_FLAGS.DEBUG_LOGGING) {
+      console.log('🌐 [标签页] 活动标签页被关闭，清理全局状态:', tabId);
+    }
+    await clearGlobalDialogState();
+  }
+});
+
+// 标签页更新时检查状态一致性
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // 只有在跨页面互斥功能启用时才处理
+  if (!FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX) {
+    return;
+  }
+  
+  // 只在标签页完全加载后检查
+  if (changeInfo.status === 'complete' && globalDialogState.activeTabId === tabId) {
+    // 更新标签页标题（如果有变化）
+    if (tab.title !== globalDialogState.activeTabTitle) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🌐 [标签页] 更新活动标签页标题:', tab.title);
+      }
+      globalDialogState.activeTabTitle = tab.title;
+      await saveGlobalDialogState();
+    }
+  }
+  
+  // 如果标签页导航到新URL，这可能意味着页面重新加载或导航
+  // 在这种情况下，我们应该清理对话框状态
+  if (changeInfo.url && globalDialogState.activeTabId === tabId) {
+    if (FEATURE_FLAGS.DEBUG_LOGGING) {
+      console.log('🌐 [标签页] 活动标签页导航到新URL，清理状态:', changeInfo.url);
+    }
+    await clearGlobalDialogState();
+  }
+});
+
+// 标签页激活时验证状态一致性
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  // 只有在跨页面互斥功能启用时才处理
+  if (!FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX) {
+    return;
+  }
+  
+  // 如果有全局状态但活动标签页不匹配，可能存在状态不一致
+  if (globalDialogState.isAnyDialogOpen && 
+      globalDialogState.activeTabId !== activeInfo.tabId) {
+    if (FEATURE_FLAGS.DEBUG_LOGGING) {
+      console.log('🔍 [标签页激活] 检查全局状态一致性');
+    }
+    
+    try {
+      // 尝试获取记录的活动标签页信息
+      const activeTab = await chrome.tabs.get(globalDialogState.activeTabId);
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🔍 [标签页激活] 全局状态中的标签页仍然存在:', activeTab.id);
+      }
+    } catch (error) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🌐 [标签页激活] 全局状态中的标签页不存在，清理状态');
+      }
+      await clearGlobalDialogState();
+    }
+  }
+});
+
+// 窗口关闭时清理相关状态
+chrome.windows.onRemoved.addListener(async (windowId) => {
+  // 只有在跨页面互斥功能启用时才处理
+  if (!FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX) {
+    return;
+  }
+  
+  if (globalDialogState.isAnyDialogOpen) {
+    try {
+      // 检查活动标签页是否属于被关闭的窗口
+      const activeTab = await chrome.tabs.get(globalDialogState.activeTabId);
+      if (activeTab.windowId === windowId) {
+        if (FEATURE_FLAGS.DEBUG_LOGGING) {
+          console.log('🌐 [窗口] 包含活动对话框的窗口被关闭，清理状态');
+        }
+        await clearGlobalDialogState();
+      }
+    } catch (error) {
+      // 如果无法获取标签页信息，说明标签页已经不存在
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🌐 [窗口] 无法访问活动标签页，清理状态');
+      }
+      await clearGlobalDialogState();
+    }
+  }
+});
+
+// 定期检查状态一致性（每30秒检查一次）
+setInterval(async () => {
+  // 只有在跨页面互斥功能启用时才处理
+  if (!FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX) {
+    return;
+  }
+  
+  if (globalDialogState.isAnyDialogOpen && globalDialogState.activeTabId) {
+    try {
+      await chrome.tabs.get(globalDialogState.activeTabId);
+      // 标签页存在，状态可能是正常的
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🔄 [定期检查] 全局状态正常');
+      }
+    } catch (error) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log('🌐 [定期检查] 检测到孤立状态，自动清理');
+      }
+      await clearGlobalDialogState();
+    }
+  }
+}, 30000); // 30秒检查一次
+
+// 增强的更新全局弹窗状态函数
+async function updateGlobalDialogStateWithTimeout(isOpen, dialogType = null, tabId = null, tabTitle = null, tabUrl = null) {
+  await updateGlobalDialogState(isOpen, dialogType, tabId, tabTitle, tabUrl);
+  
+  // 清除之前的超时
+  if (dialogTimeoutId) {
+    clearTimeout(dialogTimeoutId);
+    dialogTimeoutId = null;
+  }
+  
+  // 如果打开对话框，设置超时保护（30分钟后自动清理）
+  if (isOpen) {
+    dialogTimeoutId = setTimeout(async () => {
+      console.log('⏰ [超时保护] 对话框状态超时，自动清理');
+      await clearGlobalDialogState();
+      dialogTimeoutId = null;
+    }, 30 * 60 * 1000); // 30分钟
+    console.log('⏰ [超时保护] 已设置30分钟超时保护');
+  }
+}
+
+// 检查是否可以在指定标签页打开弹窗
+function canOpenDialogInTab(requestTabId, dialogType) {
+  // 如果跨页面互斥功能被禁用，只检查同页面互斥
+  if (!FEATURE_FLAGS.CROSS_TAB_DIALOG_MUTEX) {
+    // 只在同一标签页内进行互斥检查
+    if (globalDialogState.isAnyDialogOpen && globalDialogState.activeTabId === requestTabId) {
+      if (!FEATURE_FLAGS.SAME_PAGE_DIALOG_MUTEX) {
+        return { canOpen: true }; // 如果同页面互斥也被禁用，总是允许
+      }
+      
+      // 同页面内的互斥逻辑
+      if (globalDialogState.currentDialogType === dialogType) {
+        return {
+          canOpen: false,
+          reason: getDialogAlreadyOpenMessage(dialogType),
+          isGlobalBlock: false,
+          isSamePage: true,
+          isSilent: dialogType === 'quickNote' // Quick Note重复调用时静默处理
+        };
+      } else {
+        return {
+          canOpen: false,
+          reason: getDialogConflictMessage(globalDialogState.currentDialogType, dialogType),
+          isGlobalBlock: false,
+          isSamePage: true,
+          isSilent: false
+        };
+      }
+    }
+    
+    // 不是同一标签页或没有活动对话框，允许打开
+    return { canOpen: true };
+  }
+  
+  // === 以下是完整的跨页面互斥逻辑（当功能开关启用时） ===
+  
+  // 如果没有任何弹窗打开，允许打开
+  if (!globalDialogState.isAnyDialogOpen) {
+    return { canOpen: true };
+  }
+  
+  // 如果是同一个标签页
+  if (globalDialogState.activeTabId === requestTabId) {
+    if (!FEATURE_FLAGS.SAME_PAGE_DIALOG_MUTEX) {
+      return { canOpen: true }; // 如果同页面互斥被禁用，允许打开
+    }
+    
+    // 同页面内的互斥逻辑
+    if (globalDialogState.currentDialogType === dialogType) {
+      return {
+        canOpen: false,
+        reason: getDialogAlreadyOpenMessage(dialogType),
+        isGlobalBlock: false,
+        isSamePage: true,
+        isSilent: dialogType === 'quickNote' // Quick Note重复调用时静默处理
+      };
+    } else {
+      return {
+        canOpen: false,
+        reason: getDialogConflictMessage(globalDialogState.currentDialogType, dialogType),
+        isGlobalBlock: false,
+        isSamePage: true,
+        isSilent: false
+      };
+    }
+  } else {
+    // 不同标签页，全局阻止
+    return {
+      canOpen: false,
+      reason: getGlobalBlockMessage(globalDialogState.currentDialogType, globalDialogState.activeTabTitle),
+      isGlobalBlock: true,
+      isSamePage: false,
+      activeTabId: globalDialogState.activeTabId,
+      activeTabTitle: globalDialogState.activeTabTitle,
+      activeTabUrl: globalDialogState.activeTabUrl,
+      isSilent: false
+    };
+  }
+}
+
+// 获取弹窗已打开的消息
+function getDialogAlreadyOpenMessage(dialogType) {
+  if (dialogType === 'save') {
+    return chrome.i18n.getMessage('saveDialogAlreadyOpen') || '已有保存对话框打开，请先关闭后再试';
+  } else if (dialogType === 'quickNote') {
+    return chrome.i18n.getMessage('quickNoteDialogAlreadyOpen') || '已有快速笔记对话框打开，请先关闭后再试';
+  }
+  return chrome.i18n.getMessage('dialogAlreadyOpen') || '已有对话框打开，请先关闭后再试';
+}
+
+// 获取弹窗冲突的消息
+function getDialogConflictMessage(activeType, requestType) {
+  if (activeType === 'save' && requestType === 'quickNote') {
+    return chrome.i18n.getMessage('quickNoteBlockedBySave') || '无法打开快速笔记：保存对话框正在使用中';
+  } else if (activeType === 'quickNote' && requestType === 'save') {
+    return chrome.i18n.getMessage('saveBlockedByQuickNote') || '无法打开保存对话框：快速笔记正在使用中';
+  }
+  return chrome.i18n.getMessage('dialogConflict') || '无法打开：其他对话框正在使用中';
+}
+
+// 获取全局阻止的消息
+function getGlobalBlockMessage(activeDialogType, activeTabTitle) {
+  // 使用国际化消息获取对话框类型名称
+  const dialogTypeName = activeDialogType === 'save' 
+    ? (chrome.i18n.getMessage('saveDialogTitle') || '保存笔记')
+    : (chrome.i18n.getMessage('quickNoteTitle') || '快速笔记');
+  
+  console.log('🌐 [全局阻止] 生成消息:', { activeDialogType, dialogTypeName });
+  
+  // 使用Chrome扩展的国际化消息系统（现在只需要对话框类型名称）
+  const i18nMessage = chrome.i18n.getMessage('globalDialogBlock', [dialogTypeName]);
+  if (i18nMessage) {
+    console.log('🌐 [全局阻止] 使用国际化消息:', i18nMessage);
+    return i18nMessage;
+  }
+  
+  // 回退到默认消息
+  const fallbackMessage = `Phoebe使用中：${dialogTypeName}正在另一个标签页运行`;
+  console.log('🌐 [全局阻止] 使用回退消息:', fallbackMessage);
+  return fallbackMessage;
+}
+
+// 更新右键菜单状态
+function updateContextMenuState(disabled, dialogType = null) {
+  contextMenuState.disabled = disabled;
+  contextMenuState.currentDialogType = dialogType;
+  
+  console.log(`🔄 [右键菜单] 更新状态: disabled=${disabled}, dialogType=${dialogType}`);
+  
+  // 更新右键菜单标题以反映当前状态
+  let title;
+  let enabled = true; // 默认启用右键菜单
+  
+  if (disabled) {
+    if (dialogType === 'quickNote') {
+      title = chrome.i18n.getMessage('contextMenuDisabledQuickNote') || "保存笔记 (快速笔记使用中)";
+      // 注意：这里不再禁用菜单，因为跨页面冲突时应该允许点击但显示跳转提示
+    } else if (dialogType === 'save') {
+      title = chrome.i18n.getMessage('contextMenuDisabledSave') || "保存笔记 (保存对话框使用中)";
+    } else {
+      title = chrome.i18n.getMessage('contextMenuDisabled') || "保存笔记 (有对话框在使用中)";
+    }
+  } else {
+    title = chrome.i18n.getMessage('contextMenuSave') || "保存笔记";
+  }
+  
+  chrome.contextMenus.update("saveToNotion", {
+    title: title,
+    enabled: enabled // 始终启用右键菜单
+  });
+}
 
 // 处理快捷键事件
 chrome.commands.onCommand.addListener(async (command) => {
@@ -16,6 +472,41 @@ chrome.commands.onCommand.addListener(async (command) => {
       
       if (!activeTab) {
         console.log('未找到活动标签页');
+        return;
+      }
+
+      // 检查全局弹窗状态
+      const checkResult = canOpenDialogInTab(activeTab.id, 'quickNote');
+      if (!checkResult.canOpen) {
+        if (FEATURE_FLAGS.DEBUG_LOGGING) {
+          console.log(`🚫 [快捷键] 快速笔记被阻止: ${checkResult.reason}, 静默: ${checkResult.isSilent}`);
+        }
+        
+        // 如果是静默模式（同页面Quick Note重复调用），直接返回不显示提示
+        if (checkResult.isSilent) {
+          if (FEATURE_FLAGS.DEBUG_LOGGING) {
+            console.log('🔇 [快捷键] 静默忽略重复的快速笔记调用');
+          }
+          return;
+        }
+        
+        // 发送阻止提示消息
+        if (checkResult.isGlobalBlock) {
+          // 跨页面阻止，显示可跳转的"Phoebe正忙碌中"风格的提示
+          chrome.tabs.sendMessage(activeTab.id, {
+            action: "showPhoebeWorkingNotificationWithJump",
+            message: checkResult.reason,
+            activeTabId: checkResult.activeTabId,
+            activeTabTitle: checkResult.activeTabTitle,
+            activeTabUrl: checkResult.activeTabUrl
+          });
+        } else {
+          // 同页面阻止，显示普通错误提示
+          chrome.tabs.sendMessage(activeTab.id, {
+            action: "showError",
+            message: checkResult.reason
+          });
+        }
         return;
       }
       
@@ -68,6 +559,41 @@ chrome.commands.onCommand.addListener(async (command) => {
 // 处理右键菜单点击
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === "saveToNotion") {
+    // 检查全局弹窗状态
+    const checkResult = canOpenDialogInTab(tab.id, 'save');
+    if (!checkResult.canOpen) {
+      if (FEATURE_FLAGS.DEBUG_LOGGING) {
+        console.log(`🚫 [右键菜单] 保存功能被阻止: ${checkResult.reason}, 静默: ${checkResult.isSilent}`);
+      }
+      
+      // 如果是静默模式，直接返回不显示提示
+      if (checkResult.isSilent) {
+        if (FEATURE_FLAGS.DEBUG_LOGGING) {
+          console.log('🔇 [右键菜单] 静默忽略重复的保存调用');
+        }
+        return;
+      }
+      
+      // 发送阻止提示消息
+      if (checkResult.isGlobalBlock) {
+        // 跨页面阻止，显示可跳转的"Phoebe正忙碌中"风格的提示
+        chrome.tabs.sendMessage(tab.id, {
+          action: "showPhoebeWorkingNotificationWithJump",
+          message: checkResult.reason,
+          activeTabId: checkResult.activeTabId,
+          activeTabTitle: checkResult.activeTabTitle,
+          activeTabUrl: checkResult.activeTabUrl
+        });
+      } else {
+        // 同页面阻止，显示普通错误提示
+        chrome.tabs.sendMessage(tab.id, {
+          action: "showError",
+          message: checkResult.reason
+        });
+      }
+      return;
+    }
+    
     const selectedText = info.selectionText;
     const url = tab.url;
     const title = tab.title;
@@ -241,10 +767,63 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })();
     
     return true;
+  } else if (request.action === "updateContextMenuState") {
+    // 更新右键菜单状态
+    updateContextMenuState(request.disabled, request.dialogType);
+    sendResponse({ success: true });
+    return true;
+  } else if (request.action === "updateGlobalDialogState") {
+    // 更新全局弹窗状态
+    (async () => {
+      try {
+        await updateGlobalDialogStateWithTimeout(
+          request.isOpen, 
+          request.dialogType, 
+          sender.tab?.id, 
+          sender.tab?.title, 
+          sender.tab?.url
+        );
+        // 同时更新右键菜单状态以保持兼容
+        updateContextMenuState(request.isOpen, request.dialogType);
+        sendResponse({ success: true });
+      } catch (error) {
+        console.error('更新全局弹窗状态失败:', error);
+        sendResponse({ success: false, error: error.message });
+      }
+    })();
+    return true;
+  } else if (request.action === "switchToTab") {
+    // 跳转到指定标签页
+    try {
+      if (request.tabId) {
+        chrome.tabs.update(request.tabId, { active: true }, (tab) => {
+          if (chrome.runtime.lastError) {
+            console.error('切换标签页失败:', chrome.runtime.lastError);
+            sendResponse({ success: false, error: chrome.runtime.lastError.message });
+          } else if (tab) {
+            // 也要切换到该标签页所在的窗口
+            chrome.windows.update(tab.windowId, { focused: true }, () => {
+              if (chrome.runtime.lastError) {
+                console.log('切换窗口焦点失败:', chrome.runtime.lastError);
+              }
+              sendResponse({ success: true });
+            });
+          } else {
+            sendResponse({ success: false, error: '标签页不存在' });
+          }
+        });
+      } else {
+        sendResponse({ success: false, error: '无效的标签页ID' });
+      }
+    } catch (error) {
+      console.error('跳转标签页出错:', error);
+      sendResponse({ success: false, error: error.message });
+    }
+    return true;
   } else if (request.action === "getI18nTexts") {
     // 获取常用的本地化文本供content script使用
     const texts = {
-      saveDialogTitle: chrome.i18n.getMessage('saveDialogTitle') || '保存到Notion',
+      saveDialogTitle: chrome.i18n.getMessage('saveDialogTitle') || '保存笔记',
       saveDialogContent: chrome.i18n.getMessage('saveDialogContent') || '选中内容:',
       saveDialogNote: chrome.i18n.getMessage('saveDialogNote') || '备注 (必填):',
       saveDialogNotePlaceholder: chrome.i18n.getMessage('saveDialogNotePlaceholder') || '请输入笔记内容（必填）...',
@@ -253,7 +832,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       buttonCancel: chrome.i18n.getMessage('buttonCancel') || '取消',
       buttonSave: chrome.i18n.getMessage('buttonSave') || '保存',
       buttonSaving: chrome.i18n.getMessage('buttonSaving') || '保存中...',
-      saveSuccess: chrome.i18n.getMessage('saveSuccess') || '成功保存到Notion!',
+      saveSuccess: chrome.i18n.getMessage('saveSuccess') || '笔记保存成功!',
       saveFailed: chrome.i18n.getMessage('saveFailed') || '保存失败',
       errorNetwork: chrome.i18n.getMessage('errorNetwork') || '未知错误，请检查网络连接',
       // 新增的国际化文本
@@ -274,7 +853,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       phoebeWorking: chrome.i18n.getMessage('phoebeWorking') || 'Phoebe正在工作中',
       creatingPage: chrome.i18n.getMessage('creatingPage') || '正在努力帮你创建页面"$PAGE$"...<br>请稍等片刻 ✨',
       phoebeSaving: chrome.i18n.getMessage('phoebeSaving') || 'Phoebe正在保存',
-      savingToNotion: chrome.i18n.getMessage('savingToNotion') || '正在保存到Notion中...<br>请稍等片刻 ✨',
+      savingToNotion: chrome.i18n.getMessage('savingToNotion') || '正在保存笔记...<br>请稍等片刻 ✨',
       pageCreatedSuccess: chrome.i18n.getMessage('pageCreatedSuccess') || '新页面 "$PAGE$" 创建成功',
       extensionNotInitializedRetry: chrome.i18n.getMessage('extensionNotInitializedRetry') || '扩展未初始化，请刷新页面重试',
       pleaseSelectPage: chrome.i18n.getMessage('pleaseSelectPage') || '请选择一个页面',
@@ -389,9 +968,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// 保存到Notion的函数
+// 保存笔记的函数
 async function saveToNotion(data, config) {
-  console.log('开始保存到Notion:', { data, config });
+  console.log('开始保存笔记:', { data, config });
   
   // 如果有pageId，追加到现有页面；否则在database中创建新页面
   if (data.pageId) {

@@ -104,7 +104,7 @@ Wenn Phoebe während der Nutzung unzureichende Berechtigungen anzeigt:
 
 ### 🔍 Webseiteninhalt sammeln
 1. Wählen Sie auf einer beliebigen Webseite den Text aus, den Sie sammeln möchten
-2. Klicken Sie mit der rechten Maustaste und wählen Sie "In Notion speichern"
+2. Klicken Sie mit der rechten Maustaste und wählen Sie "In Notizen speichern"
 3. Im aufgetauchten Phoebe-Dialog:
    - Überprüfen Sie den ausgewählten Inhalt
    - Fügen Sie Notizen hinzu (optional)

@@ -6,7 +6,7 @@
     "message": "Markierten Text schnell zu Notion-Seiten hinzufügen"
   },
   "contextMenuSave": {
-    "message": "In Notion speichern"
+    "message": "In Notizen speichern"
   },
   "popupTitle": {
     "message": "Phoebe"
@@ -48,7 +48,7 @@
     "message": "Text auf beliebiger Webseite markieren"
   },
   "usageStep2": {
-    "message": "Rechtsklick und \"In Notion speichern\" wählen"
+    "message": "Rechtsklick und \"In Notizen speichern\" wählen"
   },
   "usageStep3": {
     "message": "Notizen und Tags hinzufügen (optional)"
@@ -66,7 +66,7 @@
     "message": "Statistiken laden..."
   },
   "saveDialogTitle": {
-    "message": "In Notion speichern"
+    "message": "In Notizen speichern"
   },
   "saveDialogContent": {
     "message": "Markierter Inhalt:"
@@ -93,7 +93,7 @@
     "message": "Speichern..."
   },
   "saveSuccess": {
-    "message": "Erfolgreich in Notion gespeichert!"
+    "message": "Erfolgreich in Notizen gespeichert!"
   },
   "saveFailed": {
     "message": "Speichern fehlgeschlagen"
@@ -519,5 +519,29 @@
   },
   "buttonConfirm": {
     "message": "Bestätigen"
+  },
+  "saveDialogAlreadyOpen": {
+    "message": "Speichern-Dialog ist bereits geöffnet, bitte erst schließen"
+  },
+  "quickNoteDialogAlreadyOpen": {
+    "message": "Schnellnotiz-Dialog ist bereits geöffnet, bitte erst schließen"
+  },
+  "dialogAlreadyOpen": {
+    "message": "Ein Dialog ist bereits geöffnet, bitte erst schließen"
+  },
+  "contextMenuDisabled": {
+    "message": "In Notizen speichern (Dialog geöffnet)"
+  },
+  "contextMenuDisabledSave": {
+    "message": "In Notizen speichern (Speichern-Dialog geöffnet)"
+  },
+  "contextMenuDisabledQuickNote": {
+    "message": "In Notizen speichern (Schnellnotiz geöffnet)"
+  },
+  "quickNoteDisabled": {
+    "message": "Schnellnotiz-Funktion eingeschränkt: Anderer Dialog ist in Verwendung"
+  },
+  "quickNoteDisabledSaveOpen": {
+    "message": "Schnellnotiz-Funktion eingeschränkt: Speichern-Dialog ist in Verwendung"
   }
 } 

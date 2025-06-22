@@ -14,7 +14,7 @@ This extension does not collect, store, or share any personally identifiable inf
 It only runs when the user explicitly performs the following:
 
 - Selects text on a webpage
-- Clicks "Save to Notion" from the context menu
+- Clicks "Save to Notes" from the context menu
 - Uses Chrome's native selectionText API to retrieve the selected text
 - Sends the selected text to the user's Notion database via Notion API
 

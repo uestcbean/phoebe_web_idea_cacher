@@ -6,7 +6,7 @@
     "message": "Quickly append selected text to Notion pages"
   },
   "contextMenuSave": {
-    "message": "Save to Notion"
+    "message": "Save Note"
   },
   "popupTitle": {
     "message": "Phoebe"
@@ -48,7 +48,7 @@
     "message": "Select text on any webpage"
   },
   "usageStep2": {
-    "message": "Right-click and choose \"Save to Notion\""
+    "message": "Right-click and choose \"Save Note\""
   },
   "usageStep3": {
     "message": "Add notes and tags (optional)"
@@ -66,7 +66,7 @@
     "message": "Loading statistics..."
   },
   "saveDialogTitle": {
-    "message": "Save to Notion"
+    "message": "Save Note"
   },
   "saveDialogContent": {
     "message": "Selected content:"
@@ -527,5 +527,47 @@
   },
   "buttonConfirm": {
     "message": "Confirm"
+  },
+  "saveDialogAlreadyOpen": {
+    "message": "Save dialog is already open, please close it first"
+  },
+  "quickNoteDialogAlreadyOpen": {
+    "message": "Quick note dialog is already open, please close it first"
+  },
+  "dialogAlreadyOpen": {
+    "message": "A dialog is already open, please close it first"
+  },
+  "contextMenuDisabled": {
+    "message": "Save Note (Dialog active)"
+  },
+  "contextMenuDisabledSave": {
+    "message": "Save Note (Save dialog active)"
+  },
+  "contextMenuDisabledQuickNote": {
+    "message": "Save Note (Quick note active)"
+  },
+  "quickNoteDisabled": {
+    "message": "Quick note feature degraded: Another dialog is in use"
+  },
+  "quickNoteDisabledSaveOpen": {
+    "message": "Quick note feature degraded: Save dialog is in use"
+  },
+  "quickNoteBlockedBySave": {
+    "message": "Cannot open quick note: Save dialog is in use"
+  },
+  "saveBlockedByQuickNote": {
+    "message": "Cannot open save dialog: Quick note is in use"
+  },
+  "dialogConflict": {
+    "message": "Cannot open: Another dialog is in use"
+  },
+  "globalDialogBlock": {
+    "message": "Phoebe is busy: $1 is active in another tab"
+  },
+  "jumpToActiveTab": {
+    "message": "Jump to Active Tab"
+  },
+  "clickToJump": {
+    "message": "Click the link below to jump to the active tab:"
   }
 } 
